@@ -5,13 +5,6 @@
 ## Makefile
 ##
 
-##
-## EPITECH PROJECT, 2024
-## B-PDG-300-MAR-3-1-PDGD05
-## File description:
-## Makefile
-##
-
 NAME = arcade
 
 DIR_COMPONENTS = main.cpp \
