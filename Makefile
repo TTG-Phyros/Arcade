@@ -20,6 +20,10 @@ all: $(NAME)
 $(NAME):
 	g++ -o $(NAME) $(SRC) $(CFLAGS)
 
+graphicals:
+	g++ -shared -o arcade_sfml.so src/graphicals/arcade_sfml.cpp -fPIC
+	mv arcade_sfml.so src/lib/
+
 valgrind: $(NAME)
 	clear
 	valgrind ./$(NAME) | cat -e

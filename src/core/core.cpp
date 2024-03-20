@@ -19,8 +19,14 @@ int main (int ac, char **av)
     } catch (Game::GameError &error) {
         std::cout << error.what() << std::endl;
     }
+    // try {
+    //     Graphical::IGraphical *graphical = new Graphical::IGraphical("./src/lib/testGraphic.so");
+    //     graphical->mainMenu();
+    // } catch (Graphical::GraphicalError &error) {
+    //     std::cout << error.what() << std::endl;
+    // }
     try {
-        Graphical::IGraphical *graphical = new Graphical::IGraphical("./src/lib/testGraphic.so");
+        Graphical::IGraphical *graphical = new Graphical::IGraphical("./src/lib/arcade_sfml.so");
         graphical->mainMenu();
     } catch (Graphical::GraphicalError &error) {
         std::cout << error.what() << std::endl;
