@@ -24,7 +24,5 @@ Lancer l'executable `arcade` avec un parametre obligatoire entre `./lib/arcade_n
 
 ## Auteur
 
-| [<img src="https://github.com/Anagon1803.png?size=85" width=85><br><sub>Anaëlle Urbon</sub>](https://github.com/Anagon1803)
-| [<img src="https://github.com/BaptisteMERY.png?size=85" width=85><br><sub>Baptiste Mery</sub>](https://github.com/BaptisteMERY)
-| [<img src="https://github.com/TTG-Phyros.png?size=85" width=85><br><sub>Nicolas Audibert</sub>](https://github.com/TTG-Phyros)
+| [<img src="https://github.com/Anagon1803.png?size=85" width=85><br><sub>Anaëlle Urbon</sub>](https://github.com/Anagon1803) | [<img src="https://github.com/BaptisteMERY.png?size=85" width=85><br><sub>Baptiste Mery</sub>](https://github.com/BaptisteMERY) | [<img src="https://github.com/TTG-Phyros.png?size=85" width=85><br><sub>Nicolas Audibert</sub>](https://github.com/TTG-Phyros)
 | :---: | :---: | :---: |
