@@ -1,13 +1,15 @@
 ##
 ## EPITECH PROJECT, 2024
-## teck2
+## Arcade
 ## File description:
 ## Makefile
 ##
 
 NAME = arcade
 
-DIR_COMPONENTS = main.cpp \
+DIR_COMPONENTS = ./src/core/core.cpp 		\
+				 ./src/core/IGame.cpp 		\
+				 ./src/core/IGraphical.cpp 	\
 
 SRC = $(DIR_COMPONENTS)
 
