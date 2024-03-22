@@ -14,11 +14,13 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <filesystem> //std::filesystem
 
 #define WINDOW_SIZE_X 1900
 #define WINDOW_SIZE_Y 1000
 
-enum {MENU};
+enum {MENU, GAME};
+
 
 class ICore
 {
@@ -37,7 +39,12 @@ class MenuPrincipal : public ICore
         void display(sf::RenderWindow *wdw) const override;
         void conditionsKey(sf::Event event, int *mode) const override;
 
-        sf::RectangleShape r_graphics;
+        mutable sf::RectangleShape r_graphics;
+        mutable sf::Font font;
+        mutable sf::Text text;
+        std::vector<std::string> l_game;
+        std::vector<std::string> l_graph;
+        mutable std::vector<int> selection;
 };
 
 class Game
