@@ -36,6 +36,7 @@ class snake
         // Variable de jeu
         bool gameOver;
         int score;
+        std::string maze;
 
     public:
         snake();

@@ -51,7 +51,7 @@ int main()
         }
         game.update();
         game.display();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000/2));
     }
     std::cout << "Game Over" << std::endl;
     return 0;
@@ -138,6 +138,7 @@ void snake::update()
     else if (snakeY < 0)
         snakeY = height - 1;
 
+    // Gestion des collisions avec le corps du serpent
     for (int i = 0; i < nTail; i++)
         if (tailX[i] == snakeX && tailY[i] == snakeY)
             gameOver = true;
@@ -145,45 +146,43 @@ void snake::update()
 
 void snake::display()
 {
-    // system("cls"); // Efface la console
-
     // Dessine la grille
     for (int i = 0; i < width + 2; i++)
-        std::cout << "#";
-    std::cout << std::endl;
+        maze += '_';
+    maze += '\n';
 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (j == 0)
-                std::cout << "#";
+                maze += '|';
 
             if (i == snakeY && j == snakeX)
-                std::cout << "O"; // Dessine la tête du serpent
+                maze += 'O'; // Dessine la tête du serpent
             else if (i == fruitY && j == fruitX)
-                std::cout << "F"; // Dessine la nourriture
+                maze += 'F'; // Dessine la nourriture
             else {
                 bool print = false;
                 for (int k = 0; k < nTail; k++) {
                     if (tailX[k] == j && tailY[k] == i) {
-                        std::cout << "o"; // Dessine le corps du serpent
+                        maze += 'o'; // Dessine le corps du serpent
                         print = true;
                     }
                 }
                 if (!print)
-                    std::cout << " ";
+                    maze += ' ';
             }
 
             if (j == width - 1)
-                std::cout << "#";
+                maze += '|';
         }
-        std::cout << std::endl;
+        maze += '\n';
     }
 
     for (int i = 0; i < width + 2; i++)
-        std::cout << "#";
-    std::cout << std::endl;
+        maze += '_';
+    maze += '\n';
 
-    std::cout << "Score :" << score << std::endl;
+    std::cout << maze << "Score :" << score << std::endl;
 }
 
 void snake::conditionsKey(int key)
