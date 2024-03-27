@@ -38,9 +38,6 @@ int main()
 {
     snake game;
     while (game.getGameOver() == false) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        game.update();
-        game.display();
         if (kbhit()) {
             char input = getchar();
             if (input == 'z')
@@ -52,7 +49,11 @@ int main()
             if (input == 'q')
                 game.conditionsKey(75);
         }
+        game.update();
+        game.display();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    std::cout << "Game Over" << std::endl;
     return 0;
 }
 
@@ -61,6 +62,11 @@ snake::snake()
     // Position initiale du serpent
     snakeX = width / 2;
     snakeY = height / 2;
+    nTail = 3;
+    for (int i = 0; i < nTail; i++) {
+        tailX[i] = snakeX;
+        tailY[i] = snakeY - (1 + i);
+    }
 
     // Position initiale de la nourriture
     srand(time(NULL));
@@ -68,11 +74,11 @@ snake::snake()
     fruitY = rand() % height;
 
     // Direction initiale du serpent
-    dir = STOP;
+    dir = DOWN;
 
     // Initialisation des variables de jeu
     gameOver = false;
-    nTail = 4;
+    score = 0;
 }
 
 snake::~snake()
@@ -81,6 +87,14 @@ snake::~snake()
 
 void snake::update()
 {
+    // Gestion des collisions avec la nourriture
+    if (snakeX == fruitX && snakeY == fruitY) {
+        nTail++; // Augmente la taille du serpent
+        fruitX = rand() % width;
+        fruitY = rand() % height;
+        score += 10;
+    }
+
     // Met à jour la position du corps du serpent
     int prevX = tailX[0];
     int prevY = tailY[0];
@@ -115,29 +129,18 @@ void snake::update()
     }
 
     // Gestion des collisions avec les bords de la grille
-    if (snakeX >= width) snakeX = 0;
-    else if (snakeX < 0) snakeX = width - 1;
-    if (snakeY >= height) snakeY = 0;
-    else if (snakeY < 0) snakeY = height - 1;
+    if (snakeX >= width)
+        snakeX = 0;
+    else if (snakeX < 0)
+        snakeX = width - 1;
+    if (snakeY >= height)
+        snakeY = 0;
+    else if (snakeY < 0)
+        snakeY = height - 1;
 
-    // // Gestion des collisions avec la nourriture
-    // if (snakeX == fruitX && snakeY == fruitY) {
-    //     nTail++; // Augmente la taille du serpent
-    //     srand(time(NULL));
-
-    // if (x >= width) x = 0; else if (x < 0) x = width - 1;
-    // if (y >= height) y = 0; else if (y < 0) y = height - 1;
-
-    // for (int i = 0; i < nTail; i++)
-    //     if (tailX[i] == x && tailY[i] == y)
-    //         gameOver = true;
-
-    // if (x == fruitX && y == fruitY) {
-    //     score += 10;
-    //     fruitX = rand() % width;
-    //     fruitY = rand() % height;
-    //     nTail++;
-    // }
+    for (int i = 0; i < nTail; i++)
+        if (tailX[i] == snakeX && tailY[i] == snakeY)
+            gameOver = true;
 }
 
 void snake::display()
@@ -179,6 +182,8 @@ void snake::display()
     for (int i = 0; i < width + 2; i++)
         std::cout << "#";
     std::cout << std::endl;
+
+    std::cout << "Score :" << score << std::endl;
 }
 
 void snake::conditionsKey(int key)

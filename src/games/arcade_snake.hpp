@@ -33,8 +33,9 @@ class snake
         int tailX[100], tailY[100];
         int nTail;
 
-        // Variable de jeu terminé
+        // Variable de jeu
         bool gameOver;
+        int score;
 
     public:
         snake();
