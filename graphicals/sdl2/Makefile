@@ -5,21 +5,19 @@
 ## Makefile
 ##
 
-NAME = arcade
+NAME = ../../lib/arcade_sdl2.so
 
-SRC = ./core/core.cpp 		\
-	  ./core/Parsing.cpp 	\
-	  ./core/GameState.cpp 	\
-
-OTHER_MAKEFILE	=	./graphicals
+SRC = arcade_sdl2.cpp			\
+	  ../../core/GameState.cpp
 
 CFLAGS 	= -std=c++20 -Wall -g3
+
+SDLFLAGS	=	-lSDL2 -lSDL2_ttf -shared -fPIC
 
 all: $(NAME)
 
 $(NAME):
-	g++ -o $(NAME) $(SRC) $(CFLAGS)
-	make -C $(OTHER_MAKEFILE)
+	g++ -o $(NAME) $(SRC) $(CFLAGS) $(SDLFLAGS)
 
 valgrind: $(NAME)
 	clear
@@ -37,11 +35,8 @@ clean :
 	find -name "*.gcno" -delete
 	find -name "*.gcda" -delete
 	find -name "vgcore.*" -delete
-	make -C $(OTHER_MAKEFILE) clean
 
 fclean : clean
 	rm -f $(NAME)
-	make -C $(OTHER_MAKEFILE) fclean
 
 re : fclean $(NAME)
-	make -C $(OTHER_MAKEFILE) re
