@@ -47,11 +47,12 @@ namespace arcade
         LEFT_KEY,
         RIGHT_KEY,
         DOWN_KEY,
-        SPACE_KEY
+        SPACE_KEY,
+        ESC_KEY
     };
 
     enum libType {
-        GAMES,
+        GAME,
         GRAPHICALS
     };
 }
@@ -63,6 +64,7 @@ public:
     ~GameState();
     void printScores();
     std::map<std::string, std::map<std::string, int>> getScores();
+    std::map<std::string, int> getGameScores(std::string gameName);
     std::vector<std::string> getLibsList();
     std::vector<std::string> getGraphList();
     std::vector<std::string> getGamesList();

@@ -2,12 +2,14 @@
 ** EPITECH PROJECT, 2024
 ** B-OOP-400-MAR-4-1-arcade
 ** File description:
-** arcade_nibbler
+** arcade_snake
 */
 
-#ifndef ARCADE_NIBBLER_HPP_
-#define ARCADE_NIBBLER_HPP_
+#ifndef ARCADE_SNAKE_HPP_
+#define ARCADE_SNAKE_HPP_
 
+#include "../../core/IGame.hpp"
+#include "../../core/ILib.hpp"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -16,12 +18,22 @@
 
 enum Direction { STOP = 0, LEFT, RIGHT, UP, DOWN };
 
-class nibbler
-{
+class snake : public arcade::IGame {
+    public:
+        snake();
+        ~snake();
+
+        void updateGameState(arcade::GameState &gameState);
+        void conditionsKey(arcade::keyPressed key);
+
+        bool getGameOver() { return gameOver; }
+        arcade::libType getLibType();
+        std::vector<std::string> getMazeUpdated();
+
     private:
         // Taille de la grille de jeu
-        int width;
-        int height;
+        const int width = 20;
+        const int height = 20;
 
         // Position de la tête du serpent et de la nourriture
         int snakeX, snakeY, fruitX, fruitY;
@@ -30,22 +42,13 @@ class nibbler
         Direction dir;
 
         // Longueur et coordonnées du corps du serpent
-        std::vector<int> tailX, tailY;
+        int tailX[100], tailY[100];
+        int nTail;
 
         // Variable de jeu
         bool gameOver;
         int score;
         std::vector<std::string> maze;
-
-    public:
-        nibbler();
-        ~nibbler();
-
-        void update();
-        void display();
-        void conditionsKey(int key);
-
-        bool getGameOver() { return gameOver; }
 };
 
-#endif /* !ARCADE_NIBBLER_HPP_ */
+#endif /* !ARCADE_SNAKE_HPP_ */

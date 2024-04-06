@@ -13,10 +13,21 @@
 #include <stdlib.h>
 #include <string>
 #include "GameState.hpp"
+#include "ILib.hpp"
 
-class IGraph {
+namespace arcade
+{
+    class IGraph;
+    enum arcadeStepMenu {
+        GRAPH = 0,
+        GAMES,
+        USERNAME
+    };
+}
+
+class arcade::IGraph : public arcade::ILib {
     public:
-        virtual void mainMenu(arcade::GameState *gameState) = 0;
+        virtual void displayWindow(GameState &gs) = 0;
         virtual arcade::libType getLibType() = 0;
         virtual ~IGraph() = default;
 

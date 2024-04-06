@@ -6,130 +6,7 @@
 */
 
 #include "arcade_sdl2.hpp"
-
-void arcadeSDL::initializeGameSelector(std::vector<std::string> games)
-{
-
-    SDL_Rect rect = {10, 30, 200, 220};
-
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-    SDL_RenderDrawRect(_renderer, &rect);
-    _categoryRects.insert({std::string("Games"), rect});
-
-    SDL_Rect selectedGameRect = {23, 40, 172, 20};
-
-    SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 150);
-    SDL_RenderDrawRect(_renderer, &selectedGameRect);
-    SDL_RenderFillRect(_renderer, &selectedGameRect);
-    _selectedGame = selectedGameRect;
-
-    SDL_Rect gamesRect = {25, 40, 170, 20};
-    _categoryRects.insert({"GamesRect", gamesRect});
-
-    int size = games.size();
-    std::smatch matches;
-
-    for (int i = 0; i < size; i++) {
-        std::regex_search(games[i], matches, std::regex(".*arcade_(\\w+).so"));
-        if (matches.size() == 2) {
-            std::string temp = matches[1];
-            int offset = 20 - temp.size();
-            _gamesTitles.push_back(std::string(offset / 2, ' ') + temp + std::string((offset / 2) + (offset % 2), ' '));
-            SDL_Surface *surfaceMessage = TTF_RenderText_Solid(_font, _gamesTitles[_gamesTitles.size() - 1].c_str(), (i == _gameSelected ? Black : White));
-            SDL_Texture *Message = SDL_CreateTextureFromSurface(_renderer, surfaceMessage);
-            SDL_RenderCopy(_renderer, Message, NULL, &gamesRect);
-            gamesRect.y += 30;
-        }
-        i++;
-    }
-}
-
-void arcadeSDL::initializeGraphicalSelector(std::vector<std::string> graphicals)
-{
-    SDL_Rect rect = {220, 30, 200, 220};
-
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-    SDL_RenderDrawRect(_renderer, &rect);
-    _categoryRects.insert({std::string("Graphicals"), rect});
-
-    SDL_Rect selectedGraphicalRect = {233, 40, 172, 20};
-
-    SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 150);
-    SDL_RenderDrawRect(_renderer, &selectedGraphicalRect);
-    SDL_RenderFillRect(_renderer, &selectedGraphicalRect);
-    _selectedGraphical = selectedGraphicalRect;
-
-    SDL_Rect graphicalRect = {235, 40, 170, 20};
-    _categoryRects.insert({std::string("GraphicalsRect"), graphicalRect});
-
-    int size = graphicals.size();
-    std::smatch matches;
-
-    for (int i = 0; i < size; i++) {
-        std::regex_search(graphicals[i], matches, std::regex(".*arcade_(\\w+).so"));
-        if (matches.size() == 2) {
-            std::string temp = matches[1];
-            int offset = 20 - temp.size();
-            _graphicalsTitles.push_back(std::string(offset / 2, ' ') + temp + std::string((offset / 2) + (offset % 2), ' '));
-            SDL_Surface *surfaceMessage = TTF_RenderText_Solid(_font, _graphicalsTitles[_graphicalsTitles.size() - 1].c_str(), (i == _graphicalSelected ? Black : White));
-            SDL_Texture *Message = SDL_CreateTextureFromSurface(_renderer, surfaceMessage);
-            SDL_RenderCopy(_renderer, Message, NULL, &graphicalRect);
-            graphicalRect.y += 30;
-        }
-        i++;
-    }
-}
-
-void arcadeSDL::initializeScoreViewer(std::map<std::string, int> scores)
-{
-    SDL_Rect rect = {430, 30, 200, 220};
-
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-    SDL_RenderDrawRect(_renderer, &rect);
-    _categoryRects.insert({std::string("Scores"), rect});
-
-    SDL_Rect scoreNameRect = {440, 40, 80, 20};
-
-    SDL_Rect scoreScoreRect = {540, 40, 80, 20};
-    _categoryRects.insert({std::string("ScoresNameRect"), scoreNameRect});
-    _categoryRects.insert({std::string("ScoresScoreRect"), scoreScoreRect});
-
-    std::map<std::string, int>::iterator itScore = scores.begin();
-    for (; itScore != scores.end(); ++itScore) {
-        SDL_Surface *surfaceMessageName = TTF_RenderText_Solid(_font, itScore->first.c_str(), {255, 255, 255});
-        SDL_Texture *MessageName = SDL_CreateTextureFromSurface(_renderer, surfaceMessageName);
-        SDL_RenderCopy(_renderer, MessageName, NULL, &scoreNameRect);
-        std::string score = std::to_string(itScore->second);
-        SDL_Surface *surfaceMessageScore = TTF_RenderText_Solid(_font, score.c_str(), {255, 255, 255});
-        SDL_Texture *MessageScore = SDL_CreateTextureFromSurface(_renderer, surfaceMessageScore);
-        scoreScoreRect.x = 540;
-        scoreScoreRect.w = 80;
-        int offset = 80 - (10 * score.length());
-        scoreScoreRect.x += offset;
-        scoreScoreRect.w -= offset;
-        SDL_RenderCopy(_renderer, MessageScore, NULL, &scoreScoreRect);
-        _scoresText.insert({surfaceMessageName, score});
-        scoreNameRect.y += 30;
-        scoreScoreRect.y += 30;
-    }
-}
-
-void arcadeSDL::initializeUsernameChanger()
-{
-    SDL_Rect rect = {10, 260, 620, 50};
-
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
-    SDL_RenderDrawRect(_renderer, &rect);
-    _categoryRects.insert({std::string("Username"), rect});
-
-    SDL_Rect usernameRect = {30, 275, 100, 20};
-    _categoryRects.insert({std::string("UsernameRect"), usernameRect});
-
-    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(_font, "Username : ", {255, 255, 255});
-    SDL_Texture *Message = SDL_CreateTextureFromSurface(_renderer, surfaceMessage);
-    SDL_RenderCopy(_renderer, Message, NULL, &usernameRect);
-    _usernameText = surfaceMessage;
-}
+#include "../../core/GameState.hpp"
 
 arcadeSDL::arcadeSDL()
 {
@@ -157,7 +34,7 @@ arcadeSDL::arcadeSDL()
         exit(84);
     }
 
-    this->setFont(TTF_OpenFont("./graphicals/sdl2/arcadeFont.ttf", 15));
+    this->setFont(TTF_OpenFont("./ressources/arcadeFont.ttf", 15));
     if (!this->getFont()) {
         fprintf(stdout, "Error while loading the font");
         exit(84);
@@ -204,73 +81,82 @@ void arcadeSDL::setMode(MainMenuMode mode)
     _mode = mode;
 }
 
-void arcadeSDL::displayAll()
+void arcadeSDL::displayAll(arcade::GameState &gameState)
 {
-    SDL_Rect gameRect = _categoryRects.find("Games")->second;
+    SDL_Rect gameRect = {10, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &gameRect);
-    SDL_Rect gamesRect = _categoryRects.find("GamesRect")->second;
+    SDL_Rect gamesRect = {25, 40, 170, 20};
 
     int i = 0;
 
-    for (const auto &lib : _gamesTitles) {
-        if (i == _gameSelected) {
-            _selectedGame.y = gamesRect.y;
+    std::vector<std::string> gameList = gameState.getGamesList();
+    SDL_Rect selectedGame = {23, 40, 172, 20};
+    for (const auto &lib : gameList) {
+        if (strcmp(lib.c_str(), gameList[_gameSelected].c_str()) == 0) {
+            selectedGame.y = gamesRect.y;
             SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 150);
-            SDL_RenderDrawRect(_renderer, &_selectedGame);
-            SDL_RenderFillRect(_renderer, &_selectedGame);
+            SDL_RenderDrawRect(_renderer, &selectedGame);
+            SDL_RenderFillRect(_renderer, &selectedGame);
         }
-        SDL_Surface *surfaceGame = TTF_RenderText_Solid(_font, lib.c_str(), (i == _gameSelected ? Black : White));
+        SDL_Surface *surfaceGame = TTF_RenderText_Solid(_font, lib.c_str(), ((strcmp(lib.c_str(), gameList[_gameSelected].c_str())) == 0 ? Black : White));
         SDL_RenderCopy(_renderer, SDL_CreateTextureFromSurface(_renderer, surfaceGame), NULL, &gamesRect);
         gamesRect.y += 30;
         i++;
     }
 
-    SDL_Rect graphicalRect = _categoryRects.find("Graphicals")->second;
+    SDL_Rect graphicalRect = {220, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &graphicalRect);
-    SDL_Rect graphicalsRect = _categoryRects.find("GraphicalsRect")->second;
+    SDL_Rect graphicalsRect = {233, 40, 172, 20};
     i = 0;
 
-    for (const auto &lib : _graphicalsTitles) {
-        if (i == _graphicalSelected) {
-            _selectedGraphical.y = graphicalsRect.y;
+    std::vector<std::string> graphList = gameState.getGraphList();
+    SDL_Rect selectedGraphical = {233, 40, 172, 20};
+    for (const auto &lib : graphList) {
+        if (strcmp(lib.c_str(), graphList[_graphicalSelected].c_str()) == 0) {
+            selectedGraphical.y = graphicalsRect.y;
             SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 150);
-            SDL_RenderDrawRect(_renderer, &_selectedGraphical);
-            SDL_RenderFillRect(_renderer, &_selectedGraphical);
+            SDL_RenderDrawRect(_renderer, &selectedGraphical);
+            SDL_RenderFillRect(_renderer, &selectedGraphical);
         }
-        SDL_Surface *surfaceGraphical = TTF_RenderText_Solid(_font, lib.c_str(), (i == _graphicalSelected ? Black : White));
+        SDL_Surface *surfaceGraphical = TTF_RenderText_Solid(_font, lib.c_str(), ((strcmp(lib.c_str(), graphList[_graphicalSelected].c_str())) == 0 ? Black : White));
         SDL_Texture *graphicalName = SDL_CreateTextureFromSurface(_renderer, surfaceGraphical);
         SDL_RenderCopy(_renderer, graphicalName, NULL, &graphicalsRect);
         graphicalsRect.y += 30;
         i++;
     }
 
-    SDL_Rect scoreRect = _categoryRects.find("Scores")->second;
+    SDL_Rect scoreRect = {430, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &scoreRect);
-    SDL_Rect scoreNameRect = _categoryRects.find("ScoresNameRect")->second;
-    SDL_Rect scoreScoreRect = _categoryRects.find("ScoresScoreRect")->second;
-    for (auto &object : _scoresText) {
-        SDL_Texture *scoreName = SDL_CreateTextureFromSurface(_renderer, object.first);
-        SDL_RenderCopy(_renderer, scoreName, NULL, &scoreNameRect);
-        scoreNameRect.y += 30;
-        SDL_Surface *surfaceMessageScore = TTF_RenderText_Solid(_font, object.second.c_str(), {255, 255, 255});
-        SDL_Texture *scoreScore = SDL_CreateTextureFromSurface(_renderer, surfaceMessageScore);
+    SDL_Rect scoreNameRect = {440, 40, 80, 20};
+    SDL_Rect scoreScoreRect = {540, 40, 80, 20};
+    std::map<std::string, int> scores = gameState.getGameScores(gameState.getGamesList()[_gameSelected]);
+    std::map<std::string, int>::iterator itScore = scores.begin();
+    for (; itScore != scores.end(); ++itScore) {
+        SDL_Surface *surfaceMessageName = TTF_RenderText_Solid(_font, itScore->first.c_str(), {255, 255, 255});
+        SDL_Texture *MessageName = SDL_CreateTextureFromSurface(_renderer, surfaceMessageName);
+        SDL_RenderCopy(_renderer, MessageName, NULL, &scoreNameRect);
+        std::string score = std::to_string(itScore->second);
+        SDL_Surface *surfaceMessageScore = TTF_RenderText_Solid(_font, score.c_str(), {255, 255, 255});
+        SDL_Texture *MessageScore = SDL_CreateTextureFromSurface(_renderer, surfaceMessageScore);
         scoreScoreRect.x = 540;
         scoreScoreRect.w = 80;
-        int offset = 80 - (10 * object.second.length());
+        int offset = 80 - (10 * score.length());
         scoreScoreRect.x += offset;
         scoreScoreRect.w -= offset;
-        SDL_RenderCopy(_renderer, scoreScore, NULL, &scoreScoreRect);
+        SDL_RenderCopy(_renderer, MessageScore, NULL, &scoreScoreRect);
+        scoreNameRect.y += 30;
         scoreScoreRect.y += 30;
     }
 
-    SDL_Rect usernameRectCat = _categoryRects.find("Username")->second;
+    SDL_Rect usernameRectCat = {10, 260, 620, 50};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &usernameRectCat);
-    SDL_Rect usernameRect = _categoryRects.find("UsernameRect")->second;
-    SDL_Texture *usernameName = SDL_CreateTextureFromSurface(_renderer, _usernameText);
+    SDL_Rect usernameRect = {30, 275, 100, 20};
+    SDL_Surface *usernameText = TTF_RenderText_Solid(_font, "Username : ", {255, 255, 255});
+    SDL_Texture *usernameName = SDL_CreateTextureFromSurface(_renderer, usernameText);
     SDL_RenderCopy(_renderer, usernameName, NULL, &usernameRect);
 
     if (_mode == USERNAME) {
@@ -292,7 +178,7 @@ void arcadeSDL::handleKeyPress(SDL_Keycode key, int& selection, int size) {
     }
 }
 
-void arcadeSDL::inputHandler()
+void arcadeSDL::inputHandler(arcade::GameState &gameState)
 {
     SDL_Event event;
 
@@ -307,15 +193,22 @@ void arcadeSDL::inputHandler()
             switch (event.key.keysym.sym) {
                 case SDLK_F1:
                 case SDLK_F2:
-                    handleKeyPress(event.key.keysym.sym, _gameSelected, _gamesTitles.size());
+                    handleKeyPress(event.key.keysym.sym, _gameSelected, gameState.getGamesList().size());
                     break;
                 case SDLK_F3:
                 case SDLK_F4:
-                    handleKeyPress(event.key.keysym.sym, _graphicalSelected, _graphicalsTitles.size());
+                    handleKeyPress(event.key.keysym.sym, _graphicalSelected, gameState.getGraphList().size());
                     break;
 
                 case SDLK_RETURN:
-                    _mode = (_mode == USERNAME && _username.size() > 1) ? GAME : _mode;
+                    if (_mode == USERNAME && _username.size() > 1) {
+                        gameState.setState(arcade::screenState::IN_GAME);
+                        gameState.setGameLib(gameState.getGamesList()[_gameSelected]);
+                        gameState.setGraphLib(gameState.getGraphList()[_graphicalSelected]);
+                        _username.pop_back();
+                        gameState.setUsername(_username);
+                        _mode = GAME;
+                    }
                     _mode = _mode == DEFAULT ? USERNAME : _mode;
                     break;
 
@@ -324,7 +217,6 @@ void arcadeSDL::inputHandler()
                         _mode = DEFAULT;
                         _username = "_";
                     }
-                    _mode = _mode == GAME ? USERNAME : _mode;
                     break;
 
                 case SDLK_BACKSPACE:
@@ -355,7 +247,9 @@ void arcadeSDL::inputHandler()
 
 arcadeSDL::~arcadeSDL()
 {
-
+    if (this->getWindow())
+        SDL_DestroyWindow(this->getWindow());
+    SDL_Quit();
 }
 
 arcade::libType arcadeSDL::getLibType()
@@ -363,28 +257,109 @@ arcade::libType arcadeSDL::getLibType()
     return arcade::libType::GRAPHICALS;
 }
 
-void arcadeSDL::mainMenu(arcade::GameState *gameState)
+void arcadeSDL::mainMenu(arcade::GameState &gameState)
 {
-    std::map<std::string, int> scores = {
-        {"Michel", 50},
-        {"Patrick", 1002},
-        {"Adam", 567}
-    };
-    this->initializeGameSelector(gameState->getGamesList());
-    this->initializeGraphicalSelector(gameState->getGraphList());
-    this->initializeScoreViewer(scores);
-    this->initializeUsernameChanger();
-    while (this->getWindow()) {
-        this->inputHandler();
-        SDL_SetRenderDrawColor(this->getRenderer(), 0, 0, 0, 255);
-        SDL_RenderClear(this->getRenderer());
-        this->displayAll();
-        SDL_RenderPresent(this->getRenderer());
-    }
+    this->inputHandler(gameState);
+    SDL_SetRenderDrawColor(this->getRenderer(), 0, 0, 0, 255);
+    SDL_RenderClear(this->getRenderer());
+    this->displayAll(gameState);
+    SDL_RenderPresent(this->getRenderer());
+}
 
-    if (this->getWindow())
-        SDL_DestroyWindow(this->getWindow());
-    SDL_Quit();
+void arcadeSDL::handleInput(arcade::GameState &gameState)
+{
+    SDL_Event event;
+    while(SDL_PollEvent(&event))
+        if (event.type == SDL_KEYUP)
+            gameState.setKey(arcade::keyPressed::NOTHING);
+    for (int i = 0; i < 500; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        while(SDL_PollEvent(&event)) {                
+            if (event.type == SDL_KEYDOWN)
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT:
+                        gameState.setKey(arcade::keyPressed::LEFT_KEY);
+                        break;
+                    case SDLK_RIGHT:
+                        gameState.setKey(arcade::keyPressed::RIGHT_KEY);
+                        break;
+                    case SDLK_UP:
+                        gameState.setKey(arcade::keyPressed::UP_KEY);
+                        break;
+                    case SDLK_DOWN:
+                        gameState.setKey(arcade::keyPressed::DOWN_KEY);
+                        break;
+                    case SDLK_ESCAPE:
+                        gameState.setKey(arcade::keyPressed::ESC_KEY);
+                        break;
+                    case SDLK_SPACE:
+                        gameState.setKey(arcade::keyPressed::SPACE_KEY);
+                        break;
+                    default:
+                        break;
+                }
+        }
+    }
+}
+
+void arcadeSDL::displayGame(arcade::GameState &gameState)
+{
+    handleInput(gameState);
+    SDL_SetRenderDrawColor(this->getRenderer(), 0, 0, 0, 255);
+    SDL_RenderClear(this->getRenderer());
+    std::vector<std::string> map = gameState.getGameArray();
+    int size = map.size();
+    if (size > 0) {
+        int width = 640 / map[0].size();
+        int height = 320 / size;
+        SDL_Rect rect = {0, 0, width, height};
+        for (int i = 0; i < size; i++) {
+            int lineSize = map[i].size();
+            for (int j = 0; j < lineSize; j++) {
+                switch (map[i][j]) {
+                    case 'O':
+                        SDL_SetRenderDrawColor(this->getRenderer(), 0, 165, 0, 255);
+                        break;
+                    case 'o':
+                        SDL_SetRenderDrawColor(this->getRenderer(), 0, 255, 0, 255);
+                        break;
+                    case 'X':
+                        SDL_SetRenderDrawColor(this->getRenderer(), 0, 0, 255, 255);
+                        break;
+                    case ' ':
+                        SDL_SetRenderDrawColor(this->getRenderer(), 0, 0, 0, 255);
+                        break;
+                    case 'F':
+                        SDL_SetRenderDrawColor(this->getRenderer(), 255, 0, 0, 255);
+                        break;
+                    default:
+                        break;
+                }
+                SDL_RenderDrawRect(this->getRenderer(), &rect);
+                SDL_RenderFillRect(this->getRenderer(), &rect);
+                rect.x += width;
+            }
+            rect.x = 0;
+            rect.y += height;
+        }
+    }
+    SDL_RenderPresent(this->getRenderer());
+}
+
+void arcadeSDL::displayWindow(arcade::GameState &gameState)
+{
+    arcade::screenState state = gameState.getState();
+    switch (state) {
+        case arcade::screenState::ARCADE_MENU:
+            this->mainMenu(gameState);
+            break;
+        case arcade::screenState::IN_GAME:
+            this->displayGame(gameState);
+            break;
+
+        default:
+            break;
+    }
 }
 
 extern "C" arcadeSDL *instance()

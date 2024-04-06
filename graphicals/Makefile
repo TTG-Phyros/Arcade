@@ -5,19 +5,20 @@
 ## Makefile
 ##
 
-SRC = sdl2	\
-	  sfml
-
 all: $(NAME)
 
 $(NAME):
-	make -C $(SRC)
+	make -C sdl2
+	make -C sfml
 
 clean :
-	make -C $(SRC) clean
+	make -C sdl2 clean
+	make -C sfml clean
 
 fclean :
-	make -C $(SRC) fclean
+	make -C sdl2 fclean
+	make -C sfml fclean
 
 re :
-	make -C $(SRC) re
+	make -C sdl2 re
+	make -C sfml re

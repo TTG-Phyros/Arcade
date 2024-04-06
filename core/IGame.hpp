@@ -13,10 +13,16 @@
 #include <stdlib.h>
 #include <string>
 #include "GameState.hpp"
+#include "ILib.hpp"
 
-class IGame {
+namespace arcade {
+    class IGame;
+};
+
+class arcade::IGame : public arcade::ILib {
     public:
         virtual arcade::libType getLibType() = 0;
+        virtual void updateGameState(arcade::GameState &gameState) = 0;
         virtual ~IGame() = default;
 
     protected:

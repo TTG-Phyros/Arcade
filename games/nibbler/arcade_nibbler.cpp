@@ -6,57 +6,6 @@
 */
 
 #include "arcade_nibbler.hpp"
-#include <termios.h> // pour tcgetattr, tcsetattr
-#include <fcntl.h> // pour fcntl
-
-int kbhit() {
-    struct termios oldt, newt;
-    int ch;
-    int oldf;
-
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-
-    ch = getchar();
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    fcntl(STDIN_FILENO, F_SETFL, oldf);
-
-    if(ch != EOF) {
-        ungetc(ch, stdin);
-        return 1;
-    }
-
-    return 0;
-}
-
-int main()
-{
-    nibbler game;
-    while (game.getGameOver() == false) {
-        std::cout << "___________________________" << std::endl;
-        game.display();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000/2));
-        if (kbhit()) {
-            char input = getchar();
-            if (input == 'z')
-                game.conditionsKey(72);
-            if (input == 's')
-                game.conditionsKey(80);
-            if (input == 'd')
-                game.conditionsKey(77);
-            if (input == 'q')
-                game.conditionsKey(75);
-        }
-        game.update();
-    }
-    std::cout << "Game Over" << std::endl;
-    return 0;
-}
 
 nibbler::nibbler()
 {
@@ -111,8 +60,9 @@ nibbler::~nibbler()
 {
 }
 
-void nibbler::update()
+void nibbler::updateGameState(arcade::GameState &gameState)
 {
+    this->conditionsKey(gameState.getKey());
     // Gestion des collisions avec la nourriture
     if (snakeX == fruitX && snakeY == fruitY) {
         tailX.push_back(0);
@@ -129,7 +79,7 @@ void nibbler::update()
     // Met à jour la position de la tête du serpent
     int saveSnakeX = snakeX;
     int saveSnakeY = snakeY;
-    maze[snakeY][snakeX] == ' ';
+    maze[snakeY][snakeX] = ' ';
     switch (dir) {
         case LEFT:
             if (maze[snakeY][snakeX - 1] == 'X') {
@@ -177,7 +127,8 @@ void nibbler::update()
         maze[tailY[0]][tailX[0]] = ' ';
         tailX[0] = saveSnakeX;
         tailY[0] = saveSnakeY;
-        for (int i = 1; i < tailX.size(); i++) {
+        int size = tailX.size();
+        for (int i = 1; i < size; i++) {
             prev2X = tailX[i];
             prev2Y = tailY[i];
             maze[tailY[i]][tailX[i]] = ' ';
@@ -189,41 +140,60 @@ void nibbler::update()
     }
 
     // Gestion des collisions avec le corps du serpent
-    for (int i = 0; i < tailX.size(); i++)
-        if (tailX[i] == snakeX && tailY[i] == snakeY)
+    int size = tailX.size();
+    for (int i = 0; i < size; i++)
+        if (tailX[i] == snakeX && tailY[i] == snakeY) {
             gameOver = true;
+            gameState.setState(arcade::screenState::GAME_END);
+            gameState.setScore(score);
+        }
+    if (gameOver == false) {
+        gameState.setGameArray(this->getMazeUpdated());
+    }
 }
 
-void nibbler::display()
+std::vector<std::string> nibbler::getMazeUpdated()
 {
     maze[fruitY][fruitX] = 'F';
-    for (int i = 0; i < tailX.size(); i++) {
+    int size = tailX.size();
+    for (int i = 0; i < size; i++) {
         maze[tailY[i]][tailX[i]] = 'o';
     }
     maze[snakeY][snakeX] = 'O';
-    // Dessine la grille
-    for (int i = 0; i < maze.size(); i++)
-        std::cout << maze[i] << std::endl;
-    std::cout << "Score :" << score << std::endl;
+    return maze;
 }
 
-void nibbler::conditionsKey(int key)
+void nibbler::conditionsKey(arcade::keyPressed key)
 {
     switch (key) {
-        case 75: // Flèche gauche
+        case arcade::keyPressed::LEFT_KEY: // Flèche gauche
             dir = LEFT;
             break;
-        case 77: // Flèche droite
+        case arcade::keyPressed::RIGHT_KEY: // Flèche droite
             dir = RIGHT;
             break;
-        case 72: // Flèche haut
+        case arcade::keyPressed::UP_KEY: // Flèche haut
             dir = UP;
             break;
-        case 80: // Flèche bas
+        case arcade::keyPressed::DOWN_KEY: // Flèche bas
             dir = DOWN;
             break;
-        case 36: // Touche ESC
+        case arcade::keyPressed::ESC_KEY: // Touche ESC
             gameOver = true;
             break;
-        }
+        case arcade::keyPressed::SPACE_KEY:
+            break;
+        case arcade::keyPressed::NOTHING:
+            break;
+    }
+}
+
+arcade::libType nibbler::getLibType()
+{
+    return arcade::libType::GAME;
+}
+
+extern "C" nibbler *instance()
+{
+    return new nibbler();
 }

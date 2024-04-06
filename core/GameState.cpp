@@ -26,6 +26,36 @@ std::map<std::string, std::map<std::string, int>> arcade::GameState::getScores()
     return this->_scores;
 }
 
+int arcade::GameState::getScore()
+{
+    return this->_score;
+}
+
+void arcade::GameState::setScore(int score)
+{
+    this->_score = score;
+}
+
+arcade::keyPressed arcade::GameState::getKey()
+{
+    return this->_key;
+}
+
+void arcade::GameState::setKey(arcade::keyPressed key)
+{
+    this->_key = key;
+}
+
+std::map<std::string, int> arcade::GameState::getGameScores(std::string gameName)
+{
+    std::smatch matches;
+    std::regex_search(gameName, matches, std::regex(".*arcade_(\\w+).so"));
+    if (matches.size() == 2)
+        if (_scores.find(std::string(matches[1])) != _scores.end())
+            return _scores[std::string(matches[1])];
+    return {};
+}
+
 std::vector<std::string> arcade::GameState::getLibsList()
 {
     return this->_libsList;
@@ -93,15 +123,7 @@ void arcade::GameState::setGraphLib(std::string libName)
 
 void arcade::GameState::setGameArray(std::vector<std::string> gameArray)
 {
-    int i = 0, len = gameArray.size();
-
-    this->_gameArray.clear();
-    this->_gameArray.resize(len);
-
-    while (i < len) {
-        this->_gameArray[i] = gameArray[i];
-        i++;
-    }
+    this->_gameArray = gameArray;
 }
 
 std::vector<std::string> arcade::GameState::getGameArray()

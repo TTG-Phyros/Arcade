@@ -5,20 +5,19 @@
 ## Makefile
 ##
 
-NAME = arcade
+NAME = ../../lib/arcade_nibbler.so
 
-SRC = ./core/core.cpp 		\
-	  ./core/Parsing.cpp 	\
-	  ./core/GameState.cpp 	\
+SRC = arcade_nibbler.cpp			\
+	  ../../core/GameState.cpp
 
 CFLAGS 	= -std=c++20 -Wall -g3
+
+SHARED_FLAGS	=	 -shared -fPIC
 
 all: $(NAME)
 
 $(NAME):
-	g++ -o $(NAME) $(SRC) $(CFLAGS)
-	make -C ./graphicals
-	make -C ./games
+	g++ -o $(NAME) $(SRC) $(CFLAGS) $(SHARED_FLAGS)
 
 valgrind: $(NAME)
 	clear
@@ -36,14 +35,8 @@ clean :
 	find -name "*.gcno" -delete
 	find -name "*.gcda" -delete
 	find -name "vgcore.*" -delete
-	make -C ./graphicals clean
-	make -C ./games clean
 
 fclean : clean
 	rm -f $(NAME)
-	make -C ./graphicals fclean
-	make -C ./games fclean
 
 re : fclean $(NAME)
-	make -C ./graphicals re
-	make -C ./games re

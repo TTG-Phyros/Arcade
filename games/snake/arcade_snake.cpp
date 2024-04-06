@@ -6,56 +6,6 @@
 */
 
 #include "arcade_snake.hpp"
-#include <termios.h> // pour tcgetattr, tcsetattr
-#include <fcntl.h> // pour fcntl
-
-int kbhit() {
-    struct termios oldt, newt;
-    int ch;
-    int oldf;
-
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-
-    ch = getchar();
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    fcntl(STDIN_FILENO, F_SETFL, oldf);
-
-    if(ch != EOF) {
-        ungetc(ch, stdin);
-        return 1;
-    }
-
-    return 0;
-}
-
-int main()
-{
-    snake game;
-    while (game.getGameOver() == false) {
-        if (kbhit()) {
-            char input = getchar();
-            if (input == 'z')
-                game.conditionsKey(72);
-            if (input == 's')
-                game.conditionsKey(80);
-            if (input == 'd')
-                game.conditionsKey(77);
-            if (input == 'q')
-                game.conditionsKey(75);
-        }
-        game.update();
-        game.display();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000/2));
-    }
-    std::cout << "Game Over" << std::endl;
-    return 0;
-}
 
 snake::snake()
 {
@@ -85,8 +35,34 @@ snake::~snake()
 {
 }
 
-void snake::update()
+void snake::conditionsKey(arcade::keyPressed key)
 {
+    switch (key) {
+        case arcade::keyPressed::LEFT_KEY: // Flèche gauche
+            dir = LEFT;
+            break;
+        case arcade::keyPressed::RIGHT_KEY: // Flèche droite
+            dir = RIGHT;
+            break;
+        case arcade::keyPressed::UP_KEY: // Flèche haut
+            dir = UP;
+            break;
+        case arcade::keyPressed::DOWN_KEY: // Flèche bas
+            dir = DOWN;
+            break;
+        case arcade::keyPressed::ESC_KEY: // Touche ESC
+            gameOver = true;
+            break;
+        case arcade::keyPressed::SPACE_KEY:
+            break;
+        case arcade::keyPressed::NOTHING:
+            break;
+    }
+}
+
+void snake::updateGameState(arcade::GameState &gameState)
+{
+    this->conditionsKey(gameState.getKey());
     // Gestion des collisions avec la nourriture
     if (snakeX == fruitX && snakeY == fruitY) {
         nTail++; // Augmente la taille du serpent
@@ -140,68 +116,67 @@ void snake::update()
 
     // Gestion des collisions avec le corps du serpent
     for (int i = 0; i < nTail; i++)
-        if (tailX[i] == snakeX && tailY[i] == snakeY)
+        if (tailX[i] == snakeX && tailY[i] == snakeY) {
             gameOver = true;
+            gameState.setState(arcade::screenState::GAME_END);
+            gameState.setScore(score);
+        }
+    if (gameOver == false) {
+        gameState.setGameArray(this->getMazeUpdated());
+    }
 }
 
-void snake::display()
+std::vector<std::string> snake::getMazeUpdated()
 {
+    std::string temp;
+    maze.clear();
     // Dessine la grille
     for (int i = 0; i < width + 2; i++)
-        maze += '_';
-    maze += '\n';
+        temp += 'X';
+    maze.push_back(temp);
+    temp.clear();
 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (j == 0)
-                maze += '|';
+                temp += 'X';
 
             if (i == snakeY && j == snakeX)
-                maze += 'O'; // Dessine la tête du serpent
+                temp += 'O'; // Dessine la tête du serpent
             else if (i == fruitY && j == fruitX)
-                maze += 'F'; // Dessine la nourriture
+                temp += 'F'; // Dessine la nourriture
             else {
                 bool print = false;
                 for (int k = 0; k < nTail; k++) {
                     if (tailX[k] == j && tailY[k] == i) {
-                        maze += 'o'; // Dessine le corps du serpent
+                        temp += 'o'; // Dessine le corps du serpent
                         print = true;
                     }
                 }
                 if (!print)
-                    maze += ' ';
+                    temp += ' ';
             }
 
             if (j == width - 1)
-                maze += '|';
+                temp += 'X';
         }
-        maze += '\n';
+        maze.push_back(temp);
+        temp.clear();
     }
 
     for (int i = 0; i < width + 2; i++)
-        maze += '_';
-    maze += '\n';
-
-    std::cout << maze << "Score :" << score << std::endl;
+        temp += 'X';
+    maze.push_back(temp);
+    temp.clear();
+    return maze;
 }
 
-void snake::conditionsKey(int key)
+arcade::libType snake::getLibType()
 {
-    switch (key) {
-        case 75: // Flèche gauche
-            dir = LEFT;
-            break;
-        case 77: // Flèche droite
-            dir = RIGHT;
-            break;
-        case 72: // Flèche haut
-            dir = UP;
-            break;
-        case 80: // Flèche bas
-            dir = DOWN;
-            break;
-        case 36: // Touche ESC
-            gameOver = true;
-            break;
-        }
+    return arcade::libType::GAME;
+}
+
+extern "C" snake *instance(void)
+{
+    return new snake();
 }

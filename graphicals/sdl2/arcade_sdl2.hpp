@@ -8,8 +8,8 @@
 #ifndef ARCADE_SDL2_HPP_
     #define ARCADE_SDL2_HPP_
 
-    #include "../../core/GameState.hpp"
-    #include "../../core/IGraphical.hpp"
+    #include "../../core/IGraph.hpp"
+    #include "../../core/ILib.hpp"
 
     #include <SDL2/SDL.h>
     #include <SDL2/SDL_ttf.h>
@@ -19,13 +19,15 @@
     #include <string>
     #include <vector>
     #include <iostream>
+    #include <thread>
 
     enum MainMenuMode { DEFAULT = 0, USERNAME, GAME };
 
-    class arcadeSDL : public IGraph {
+    class arcadeSDL : public arcade::IGraph {
         public:
             arcadeSDL();
             ~arcadeSDL();
+            void displayWindow(arcade::GameState &gameState);
             void initializeGameSelector(std::vector<std::string> games);
             void initializeGraphicalSelector(std::vector<std::string> graphicals);
             void initializeScoreViewer(std::map<std::string, int> scores);
@@ -38,21 +40,16 @@
             SDL_Window *getWindow();
             void setMode(MainMenuMode mode);
             MainMenuMode getMode();
-            void displayAll();
-            void inputHandler();
+            void displayAll(arcade::GameState &gameState);
+            void inputHandler(arcade::GameState &gameState);
             void handleKeyPress(SDL_Keycode key, int &selection, int size);
             arcade::libType getLibType();
-            void mainMenu(arcade::GameState *gameState);
+            void mainMenu(arcade::GameState &gameState);
+            void displayGame(arcade::GameState &gameState);
+            void handleInput(arcade::GameState &gameState);
 
         protected:
         private:
-            std::map<std::string, SDL_Rect> _categoryRects;
-            std::vector<std::string> _gamesTitles;
-            std::vector<std::string> _graphicalsTitles;
-            std::map<SDL_Surface *, std::string> _scoresText;
-            SDL_Surface * _usernameText;
-            SDL_Rect _selectedGame;
-            SDL_Rect _selectedGraphical;
             int _gameSelected = 0;
             int _graphicalSelected = 0; 
             std::string _username = "_";

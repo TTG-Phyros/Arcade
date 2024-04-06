@@ -8,7 +8,8 @@
 #include "GameState.hpp"
 #include "Parsing.hpp"
 #include "IGame.hpp"
-#include "IGraphical.hpp"
+#include "IGraph.hpp"
+#include "ILib.hpp"
 
 arcade::Parsing::Parsing()
 {
@@ -56,7 +57,7 @@ std::vector<std::string> arcade::Parsing::getLibsFromPath(std::string libsPath)
 
 std::vector<std::string> arcade::Parsing::getGamesFromLibs(std::vector<std::string> allLibs, std::vector<std::string> graphLibs)
 {
-    std::vector<std::string> gameLibs = {"TEST", "pasla"};
+    std::vector<std::string> gameLibs;
     int size = allLibs.size();
     for (int i = 0; i < size; i++)
         if (std::find(graphLibs.begin(), graphLibs.end(), allLibs[i]) == graphLibs.end())
@@ -66,8 +67,8 @@ std::vector<std::string> arcade::Parsing::getGamesFromLibs(std::vector<std::stri
 
 std::vector<std::string> arcade::Parsing::getGraphFromLibs(std::vector<std::string> allLibs)
 {
-    std::vector<std::string> graphLibs = {"TEST", "pasla"};
-    IGraph *(*_getLibType)(void);
+    std::vector<std::string> graphLibs;
+    ILib *(*_getLibType)(void);
     void *_lib;
     for (const auto &lib : allLibs) {
         _lib = dlopen(lib.c_str(), RTLD_LAZY);
@@ -84,8 +85,12 @@ std::vector<std::string> arcade::Parsing::getGraphFromLibs(std::vector<std::stri
             exit(84);
         }
 
-        if ((*_getLibType)()->getLibType() == arcade::libType::GRAPHICALS)
+        ILib *object = (*_getLibType)();
+        object->getLibType();
+        if (object->getLibType() == arcade::libType::GRAPHICALS) {
             graphLibs.push_back(lib);
+        }
+        delete object; 
     }
     return graphLibs;
 }

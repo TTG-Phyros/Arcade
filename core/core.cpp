@@ -6,10 +6,11 @@
 */
 
 #include "IGame.hpp"
-#include "IGraphical.hpp"
+#include "IGraph.hpp"
 #include "Parsing.hpp"
 #include <iostream>
-#include "string.h"
+#include <fstream>
+#include <string.h>
 
 void argumentsGestion(int ac, char **av, arcade::GameState *gameState)
 {
@@ -31,37 +32,113 @@ void argumentsGestion(int ac, char **av, arcade::GameState *gameState)
     }
 }
 
-// void printStringVector(std::vector<std::string> strings, std::string type)
-// {
-//     for (int i = 0; i < strings.size(); i++)
-//         std::cout << type << " : " << strings[i] << std::endl;
-// }
+void printScore(std::map<std::string, std::map<std::string, int>> scores)
+{
+    std::map<std::string, std::map<std::string, int>>::iterator itScore = scores.begin();
+    for (; itScore != scores.end(); ++itScore) {
+        std::cout << "Game : " << itScore->first << std::endl;
+        std::map<std::string, int>::iterator itScore2 = itScore->second.begin();
+        for (; itScore2 != itScore->second.end(); ++itScore2) {
+            std::cout << "    " << itScore2->first << " : " << itScore2->second << std::endl;
+        }
+    }
+}
+
+void printMiniScore(std::map<std::string, int> scores)
+{
+    std::cout << "Game : Niggler" << std::endl;
+    std::map<std::string, int>::iterator itScore = scores.begin();
+    for (; itScore != scores.end(); ++itScore) {
+        std::cout << "    " << itScore->first << " : " << itScore->second << std::endl;
+    }
+}
+
+arcade::IGraph *initializeGraph(std::string graph)
+{
+    void *graphLib = dlopen(graph.c_str(), RTLD_LAZY);
+    if (!graphLib) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(84);
+    }
+
+    dlerror();
+    arcade::IGraph *(*instance)();
+    *(void **)(&instance) = dlsym(graphLib, "instance");
+
+    if (!instance) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(84);
+    }
+    dlerror();
+    return (*instance)();
+}
+
+arcade::IGame *initializeGame(std::string game)
+{
+    if (strcmp(game.c_str(), "") == 0)
+        return nullptr;
+    void *graphLib = dlopen(game.c_str(), RTLD_LAZY);
+    if (!graphLib) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(84);
+    }
+
+    dlerror();
+    arcade::IGame *(*instance)();
+    *(void **)(&instance) = dlsym(graphLib, "instance");
+
+    if (!instance) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(84);
+    }
+    dlerror();
+    return (*instance)();
+}
+
+void updateScoreFiles(arcade::GameState &gameState)
+{
+    std::smatch matches;
+    std::string temp = gameState.getGameLib();
+    std::map<std::string, int> scores = gameState.getGameScores(temp);
+    std::regex_search(temp, matches, std::regex(".*arcade_(\\w+).so"));
+    std::map<std::string, int>::iterator it = scores.begin();
+    if (matches.size() == 2) {
+        temp = matches[1];
+        std::ofstream scoreFile("./ressources/" + temp + ".scores");
+        for (; it != scores.end(); ++it) {
+            scoreFile << it->first << ":" << it->second;
+        }
+        scoreFile << gameState.getUsername() << ":" << gameState.getScore();
+        scoreFile.close();
+    }
+    gameState.setState(arcade::screenState::ARCADE_MENU);
+}
 
 int main (int ac, char **av)
 {
     arcade::GameState *gameState = new arcade::GameState();
     argumentsGestion(ac, av, gameState);
+    std::string currentGraphLib = gameState->getGraphLib();
+    std::string currentGameLib = gameState->getGameLib();
+    arcade::IGraph *graphLib = initializeGraph(gameState->getGraphLib());
+    arcade::IGame *gameLib = initializeGame(gameState->getGameLib());
     while (1) {
-        void *graphLib = dlopen(gameState->getGraphLib().c_str(), RTLD_LAZY);
-        if (!graphLib) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(84);
+        if (strcmp(currentGraphLib.c_str(), gameState->getGraphLib().c_str()) != 0) {
+            delete graphLib;
+            graphLib = initializeGraph(gameState->getGraphLib());
+            currentGraphLib = gameState->getGraphLib();
         }
-
-        dlerror();
-        IGraph *(*instance)();
-        *(void **)(&instance) = dlsym(graphLib, "instance");
-
-        if (!instance) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(84);
+        if (strcmp(currentGameLib.c_str(), gameState->getGameLib().c_str()) != 0) {
+            delete gameLib;
+            gameLib = initializeGame(gameState->getGameLib());
+            currentGameLib = gameState->getGameLib();
         }
-        dlerror();
-        (*instance)()->mainMenu(gameState);
+        graphLib->displayWindow(*gameState);
+        if (gameState->getState() == arcade::screenState::IN_GAME && gameLib) {
+            
+            gameLib->updateGameState(*gameState);
+        }
+        if (gameState->getState() == arcade::screenState::GAME_END)
+            updateScoreFiles(*gameState);
     }
-    // // ! Boucle avec main menu qui set le gamestate
-    // // ! Ensuite lancement du jeu avec la bonne lib graphique
-
-    // arcade::Parsing *parsing = new arcade::Parsing();
-    // parsing->parseScoresFromFile("./src/ressources/");
 }
