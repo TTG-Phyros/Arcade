@@ -106,9 +106,9 @@ void updateScoreFiles(arcade::GameState &gameState)
         temp = matches[1];
         std::ofstream scoreFile("./ressources/" + temp + ".scores");
         for (; it != scores.end(); ++it) {
-            scoreFile << it->first << ":" << it->second;
+            scoreFile << it->first << ":" << it->second << std::endl;;
         }
-        scoreFile << gameState.getUsername() << ":" << gameState.getScore();
+        scoreFile << gameState.getUsername() << ":" << gameState.getScore() << std::endl;
         scoreFile.close();
     }
     gameState.setState(arcade::screenState::ARCADE_MENU);
@@ -122,7 +122,7 @@ int main (int ac, char **av)
     std::string currentGameLib = gameState->getGameLib();
     arcade::IGraph *graphLib = initializeGraph(gameState->getGraphLib());
     arcade::IGame *gameLib = initializeGame(gameState->getGameLib());
-    while (1) {
+    while (gameState->getState() != arcade::screenState::STOP) {
         if (strcmp(currentGraphLib.c_str(), gameState->getGraphLib().c_str()) != 0) {
             delete graphLib;
             graphLib = initializeGraph(gameState->getGraphLib());
@@ -135,10 +135,11 @@ int main (int ac, char **av)
         }
         graphLib->displayWindow(*gameState);
         if (gameState->getState() == arcade::screenState::IN_GAME && gameLib) {
-            
             gameLib->updateGameState(*gameState);
         }
-        if (gameState->getState() == arcade::screenState::GAME_END)
+        if (gameState->getState() == arcade::screenState::GAME_END) {
             updateScoreFiles(*gameState);
+            currentGameLib = "";
+        }
     }
 }

@@ -37,6 +37,12 @@ MenuPrincipal::~MenuPrincipal()
 
 void MenuPrincipal::display(arcade::GameState &gameState)
 {
+    if (!wdw.isOpen()) {
+        gameState.setState(arcade::screenState::STOP);
+        return;
+    }
+    conditionsKey(gameState);
+    wdw.clear(sf::Color::Black);
     sf::FloatRect textRect;
     std::vector<std::string> l_game = gameState.getGamesList();
     std::vector<std::string> l_graph = gameState.getGraphList();
@@ -77,8 +83,28 @@ void MenuPrincipal::display(arcade::GameState &gameState)
         text.setFillColor(sf::Color::White);
         text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top  + textRect.height / 2.0f);
         text.setPosition((r_graphics.getSize().x * i) + (r_graphics.getSize().x / 2), text.getCharacterSize() + 10);
-        wdw.draw(text);
+        
     };
+    text.setString("Username : " + username);
+    textRect = text.getLocalBounds();
+    text.setFillColor(sf::Color::White);
+    // text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+    text.setPosition(100, 950);
+    wdw.draw(text);
+    wdw.display();
+}
+
+bool MenuPrincipal::isValidChar(char character)
+{
+    if (character >= 97 && character <= 122)
+        return true;
+    if (character >= 65 && character <= 90)
+        return true;
+    if (character >= 48 && character <= 57)
+        return true;
+    if (character == 32)
+        return true;
+    return false;
 }
 
 void MenuPrincipal::conditionsKey(arcade::GameState &gameState)
@@ -94,35 +120,129 @@ void MenuPrincipal::conditionsKey(arcade::GameState &gameState)
                 if (selection[selection[0]] > 0)
                     selection[selection[0]] -= 1;
             } else if (event.key.code == sf::Keyboard::Down) {
-                if (selection[0] == 1 && selection[selection[0]] < graph_size - 1)
+                if (selection[0] == 1 && selection[1] < graph_size - 1)
                     selection[selection[0]] += 1;
-                if (selection[0] == 2 && selection[selection[0]] < game_size - 1)
+                if (selection[0] == 2 && selection[2] < game_size - 1)
                     selection[selection[0]] += 1;
             } else if (event.key.code == sf::Keyboard::Left) {
                 selection[0] = 1;
             } else if (event.key.code == sf::Keyboard::Right) {
                 selection[0] = 2;
             } else if (event.key.code == sf::Keyboard::Return) {
-                std::cout << "Menu Entré" << std::endl;
-                gameState.setState(arcade::screenState::IN_GAME);
-            }
+                if (username != "") {
+                    gameState.setState(arcade::screenState::IN_GAME);
+                    gameState.setGameLib(gameState.getGamesList()[selection[2]]);
+                    gameState.setGraphLib(gameState.getGraphList()[selection[1]]);
+                    gameState.setUsername(username);
+                }
+            } else if (event.key.code == sf::Keyboard::BackSpace) {
+                if (username.size() >= 1)
+                    username.pop_back();
+            } else {}
+        } else if (event.type == sf::Event::TextEntered) {
+            if (this->isValidChar(event.text.unicode))
+                username += event.text.unicode;
         }
     }
+}
+
+void MenuPrincipal::handleInput(arcade::GameState &gameState)
+{
+    sf::Event event;
+    while (wdw.pollEvent(event))
+        if (event.type == sf::Event::KeyReleased)
+            gameState.setKey(arcade::keyPressed::NOTHING);
+    for (int i = 0; i < 500; i++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        while (wdw.pollEvent(event)) {
+            if (event.type == sf::Event::KeyPressed)
+                switch (event.key.code) {
+                    case sf::Keyboard::Left:
+                        gameState.setKey(arcade::keyPressed::LEFT_KEY);
+                        break;
+                    case sf::Keyboard::Right:
+                        gameState.setKey(arcade::keyPressed::RIGHT_KEY);
+                        break;
+                    case sf::Keyboard::Up:
+                        gameState.setKey(arcade::keyPressed::UP_KEY);
+                        break;
+                    case sf::Keyboard::Down:
+                        gameState.setKey(arcade::keyPressed::DOWN_KEY);
+                        break;
+                    case sf::Keyboard::Escape:
+                        gameState.setKey(arcade::keyPressed::ESC_KEY);
+                        break;
+                    case sf::Keyboard::Space:
+                        gameState.setKey(arcade::keyPressed::SPACE_KEY);
+                        break;
+                    default:
+                        break;
+                }
+            if (event.type == sf::Event::Closed)
+                gameState.setState(arcade::screenState::STOP);
+        }
+    }
+}
+
+void MenuPrincipal::displayGame(arcade::GameState &gameState)
+{
+    handleInput(gameState);
+
+    std::vector<std::string> map = gameState.getGameArray();
+    int size = map.size();
+    float x = 0;
+    float y = 0;
+    if (size > 0) {
+        float width = WINDOW_SIZE_X / map[0].size();
+        float height = WINDOW_SIZE_Y / size;
+        sf::RectangleShape rect({width, height});
+        rect.setPosition({x, y});
+        for (int i = 0; i < size; i++) {
+            int lineSize = map[i].size();
+            for (int j = 0; j < lineSize; j++) {
+                switch (map[i][j]) {
+                case 'O':
+                    rect.setFillColor(sf::Color(0, 165, 0, 255));
+                    break;
+                case 'o':
+                    rect.setFillColor(sf::Color(0, 255, 0, 255));
+                    break;
+                case 'X':
+                    rect.setFillColor(sf::Color(0, 0, 255, 255));
+                    break;
+                case ' ':
+                    rect.setFillColor(sf::Color(0, 0, 0, 255));
+                    break;
+                case 'F':
+                    rect.setFillColor(sf::Color(255, 0, 0, 255));
+                    break;
+                default:
+                    break;
+                }
+                rect.setPosition({x, y});
+                wdw.draw(rect);
+                x += width;
+            }
+            x = 0;
+            y += height;
+        }
+    }
+    wdw.display();
 }
 
 void MenuPrincipal::displayWindow(arcade::GameState &gameState)
 {
     arcade::screenState state = gameState.getState();
-    while (state != arcade::screenState::STOP) {
-        switch (state) {
-            case arcade::screenState::ARCADE_MENU:
-                this->conditionsKey(gameState);
-                this->display(gameState);
-                break;
-            
-            default:
-                break;
-        }
+    switch (state) {
+        case arcade::screenState::ARCADE_MENU:
+            this->display(gameState);
+            break;
+        case arcade::screenState::IN_GAME:
+            this->displayGame(gameState);
+            break;
+
+        default:
+            break;
     }
 }
 

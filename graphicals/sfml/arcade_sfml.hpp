@@ -15,6 +15,7 @@
 #include <fstream>
 #include <vector>
 #include <filesystem> //std::filesystem
+#include <thread>
 #include "../../core/IGraph.hpp"
 #include "../../core/ILib.hpp"
 
@@ -29,12 +30,16 @@ class MenuPrincipal : public arcade::IGraph {
         void displayWindow(arcade::GameState &gameState);
         void display(arcade::GameState &gameState);
         void conditionsKey(arcade::GameState &gameState);
+        void displayGame(arcade::GameState &gameState);
+        void handleInput(arcade::GameState &gameState);
+        bool isValidChar(char c);
 
         mutable sf::RectangleShape r_graphics;
         mutable sf::Font font;
         mutable sf::Text text;
         mutable std::vector<int> selection;
         sf::RenderWindow wdw;
+        std::string username;
 };
 
 #endif /* !ARCADE_SFML_HPP_ */
