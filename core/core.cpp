@@ -111,7 +111,7 @@ void updateScoreFiles(arcade::GameState &gameState)
         scoreFile << gameState.getUsername() << ":" << gameState.getScore() << std::endl;
         scoreFile.close();
     }
-    gameState.setState(arcade::screenState::ARCADE_MENU);
+    gameState.updateScores();
 }
 
 int main (int ac, char **av)
@@ -140,6 +140,9 @@ int main (int ac, char **av)
         if (gameState->getState() == arcade::screenState::GAME_END) {
             updateScoreFiles(*gameState);
             currentGameLib = "";
+            currentGraphLib = "";
+            gameState->setState(arcade::screenState::ARCADE_MENU);
+            gameState->setKey(arcade::keyPressed::NOTHING);
         }
     }
 }

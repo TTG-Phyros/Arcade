@@ -130,3 +130,8 @@ std::vector<std::string> arcade::GameState::getGameArray()
 {
     return this->_gameArray;
 }
+
+void arcade::GameState::updateScores()
+{
+    this->_scores = arcade::Parsing::parseScoresFromFile(SCORES_FILE);
+}

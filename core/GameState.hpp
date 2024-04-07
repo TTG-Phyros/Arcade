@@ -85,6 +85,7 @@ public:
     void setAscii(std::vector<std::string> ascii);
     void setScore(int score);
     int getScore();
+    void updateScores();
     bool win = false;
 
 protected:
