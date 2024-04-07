@@ -77,8 +77,19 @@ void MenuPrincipal::display(arcade::GameState &gameState)
                 wdw.draw(text);
             }
             text.setString("Graphics");
-        } if (i == 2)
+        } if (i == 2) {
+            std::map<std::string, int> scores = gameState.getGameScores(l_game[selection[2]]);
+            std::map<std::string, int>::iterator it = scores.begin();
+            for (int n = 0; it != scores.end(); ++it, n++) {
+                text.setString(it->first + "  " + std::to_string(it->second));
+                textRect = text.getLocalBounds();
+                text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                text.setPosition((r_graphics.getSize().x * i) + (r_graphics.getSize().x / 2), (text.getCharacterSize() + 50) + ((n + 1) * 50));
+                text.setFillColor(sf::Color::White);
+                wdw.draw(text);
+            }
             text.setString("Score");
+        }
 
         textRect = text.getLocalBounds();
         text.setFillColor(sf::Color::White);
@@ -89,7 +100,6 @@ void MenuPrincipal::display(arcade::GameState &gameState)
     text.setString("Username : " + username);
     textRect = text.getLocalBounds();
     text.setFillColor(sf::Color::White);
-    // text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
     text.setPosition(100, 950);
     wdw.draw(text);
     wdw.display();
@@ -144,6 +154,8 @@ void MenuPrincipal::conditionsKey(arcade::GameState &gameState)
             if (this->isValidChar(event.text.unicode))
                 username += event.text.unicode;
         }
+        if (event.type == sf::Event::Closed)
+            gameState.setState(arcade::screenState::STOP);
     }
 }
 

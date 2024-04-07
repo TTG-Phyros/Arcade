@@ -16,6 +16,7 @@
 #include <vector>
 #include <filesystem> //std::filesystem
 #include <thread>
+#include <string>
 #include "../../core/IGraph.hpp"
 #include "../../core/ILib.hpp"
 
