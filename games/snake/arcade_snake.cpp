@@ -60,6 +60,30 @@ void snake::conditionsKey(arcade::keyPressed key)
     }
 }
 
+void snake::checkCollision(arcade::GameState &gameState)
+{
+    // Gestion des collisions avec les bords de la grille
+    if (snakeX >= width)
+        snakeX = 0;
+    else if (snakeX < 0)
+        snakeX = width - 1;
+    if (snakeY >= height)
+        snakeY = 0;
+    else if (snakeY < 0)
+        snakeY = height - 1;
+
+    // Gestion des collisions avec le corps du serpent
+    for (int i = 0; i < nTail; i++)
+        if (tailX[i] == snakeX && tailY[i] == snakeY) {
+            gameOver = true;
+            gameState.setState(arcade::screenState::GAME_END);
+            gameState.setScore(score);
+        }
+    if (gameOver == false) {
+        gameState.setGameArray(this->getMazeUpdated());
+    }
+}
+
 void snake::updateGameState(arcade::GameState &gameState)
 {
     this->conditionsKey(gameState.getKey());
@@ -103,27 +127,7 @@ void snake::updateGameState(arcade::GameState &gameState)
         default:
             break;
     }
-
-    // Gestion des collisions avec les bords de la grille
-    if (snakeX >= width)
-        snakeX = 0;
-    else if (snakeX < 0)
-        snakeX = width - 1;
-    if (snakeY >= height)
-        snakeY = 0;
-    else if (snakeY < 0)
-        snakeY = height - 1;
-
-    // Gestion des collisions avec le corps du serpent
-    for (int i = 0; i < nTail; i++)
-        if (tailX[i] == snakeX && tailY[i] == snakeY) {
-            gameOver = true;
-            gameState.setState(arcade::screenState::GAME_END);
-            gameState.setScore(score);
-        }
-    if (gameOver == false) {
-        gameState.setGameArray(this->getMazeUpdated());
-    }
+    this->checkCollision(gameState);
 }
 
 std::vector<std::string> snake::getMazeUpdated()
@@ -135,12 +139,9 @@ std::vector<std::string> snake::getMazeUpdated()
         temp += 'X';
     maze.push_back(temp);
     temp.clear();
-
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            if (j == 0)
-                temp += 'X';
-
+            if (j == 0) temp += 'X';
             if (i == snakeY && j == snakeX)
                 temp += 'O'; // Dessine la tête du serpent
             else if (i == fruitY && j == fruitX)
@@ -153,19 +154,14 @@ std::vector<std::string> snake::getMazeUpdated()
                         print = true;
                     }
                 }
-                if (!print)
-                    temp += ' ';
+                if (!print) temp += ' ';
             }
-
-            if (j == width - 1)
-                temp += 'X';
+            if (j == width - 1) temp += 'X';
         }
         maze.push_back(temp);
         temp.clear();
     }
-
-    for (int i = 0; i < width + 2; i++)
-        temp += 'X';
+    for (int i = 0; i < width + 2; i++) temp += 'X';
     maze.push_back(temp);
     temp.clear();
     return maze;

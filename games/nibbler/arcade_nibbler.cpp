@@ -9,26 +9,6 @@
 
 nibbler::nibbler()
 {
-    maze.push_back("XXXXXXXXXXXXXXXXXXX");//0
-    maze.push_back("X   XX   X   XX   X");
-    maze.push_back("X X    X X X    X X");
-    maze.push_back("X XXXX   X   XXXX X");
-    maze.push_back("X                 X");
-    maze.push_back("XX  XXX XXX XXX  XX");
-    maze.push_back("X    X  XXX  X    X");
-    maze.push_back("X                 X");
-    maze.push_back("XX XX  X   X  XX XX");
-    maze.push_back("XX XX  XX XX  XX XX");
-    maze.push_back("XX XX  X   X  XX XX");
-    maze.push_back("X                 X");
-    maze.push_back("X    X  XXX  X    X");
-    maze.push_back("XX  XXX XXX XXX  XX");
-    maze.push_back("X                 X");
-    maze.push_back("X XXXX   X   XXXX X");
-    maze.push_back("X X    X X X    X X");
-    maze.push_back("X   XX   X   XX   X");
-    maze.push_back("XXXXXXXXXXXXXXXXXXX");//18
-
     // Position initiale du serpent
     width = maze[0].size() - 1;
     height = maze.size() - 1;
@@ -47,78 +27,47 @@ nibbler::nibbler()
         fruitX = rand() % width;
         fruitY = rand() % height;
     }
-
-    // Direction initiale du serpent
-    dir = STOP;
-
-    // Initialisation des variables de jeu
-    gameOver = false;
-    score = 0;
 }
 
 nibbler::~nibbler()
 {
 }
 
-void nibbler::updateGameState(arcade::GameState &gameState)
+void nibbler::moveSnakeHead()
 {
-    this->conditionsKey(gameState.getKey());
-    // Gestion des collisions avec la nourriture
-    if (snakeX == fruitX && snakeY == fruitY) {
-        tailX.push_back(0);
-        tailY.push_back(0); // Augmente la taille du serpent
-        fruitX = rand() % width;
-        fruitY = rand() % height;
-        while (maze[fruitY][fruitX] != ' ') {
-        fruitX = rand() % width;
-        fruitY = rand() % height;
-        }
-        score += 10;
-    }
-
-    // Met à jour la position de la tête du serpent
-    int saveSnakeX = snakeX;
-    int saveSnakeY = snakeY;
     maze[snakeY][snakeX] = ' ';
     switch (dir) {
         case LEFT:
             if (maze[snakeY][snakeX - 1] == 'X') {
                 dir = STOP;
-                break;
-            }
-            snakeX--;
+            } else
+                snakeX--;
             break;
         case RIGHT:
             if (maze[snakeY][snakeX + 1] == 'X') {
                 dir = STOP;
-                break;
-            }
-            snakeX++;
+            } else
+                snakeX++;
             break;
         case UP:
             if (maze[snakeY - 1][snakeX] == 'X') {
                 dir = STOP;
-                break;
-            }
-            snakeY--;
+            } else
+                snakeY--;
             break;
         case DOWN:
             if (maze[snakeY + 1][snakeX] == 'X') {
                 dir = STOP;
-                break;
-            }
-            snakeY++;
+            } else
+                snakeY++;
             break;
         default:
             break;
     }
+}
 
-    // Gestion des collisions avec les murs
-    if (maze[snakeY][snakeX] == 'X') {
-        std::cout << "maze[" << snakeY << "][" << snakeX << "] == 'X'" << std::endl;
-        dir = STOP;
-    }
-
+void nibbler::moveSnakeBody(int saveSnakeX, int saveSnakeY)
+{
     // Met à jour la position du corps du serpent
     if (dir != STOP) {
         int prevX = tailX[0];
@@ -138,6 +87,36 @@ void nibbler::updateGameState(arcade::GameState &gameState)
             prevY = prev2Y;
         }
     }
+}
+
+void nibbler::updateGameState(arcade::GameState &gameState)
+{
+    this->conditionsKey(gameState.getKey());
+    // Gestion des collisions avec la nourriture
+    if (snakeX == fruitX && snakeY == fruitY) {
+        tailX.push_back(0);
+        tailY.push_back(0); // Augmente la taille du serpent
+        fruitX = rand() % width;
+        fruitY = rand() % height;
+        while (maze[fruitY][fruitX] != ' ') {
+        fruitX = rand() % width;
+        fruitY = rand() % height;
+        }
+        score += 10;
+    }
+
+    int saveSnakeX = snakeX;
+    int saveSnakeY = snakeY;
+
+    moveSnakeHead();
+
+    // Gestion des collisions avec les murs
+    if (maze[snakeY][snakeX] == 'X') {
+        std::cout << "maze[" << snakeY << "][" << snakeX << "] == 'X'" << std::endl;
+        dir = STOP;
+    }
+
+    moveSnakeBody(saveSnakeX, saveSnakeY);
 
     // Gestion des collisions avec le corps du serpent
     int size = tailX.size();

@@ -26,7 +26,7 @@ class snake : public arcade::IGame {
         void updateGameState(arcade::GameState &gameState);
         void conditionsKey(arcade::keyPressed key);
 
-        bool getGameOver() { return gameOver; }
+        void checkCollision(arcade::GameState &gameState);
         arcade::libType getLibType();
         std::vector<std::string> getMazeUpdated();
 

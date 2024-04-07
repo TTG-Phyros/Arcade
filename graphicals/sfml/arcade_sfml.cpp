@@ -121,9 +121,9 @@ void MenuPrincipal::conditionsKey(arcade::GameState &gameState)
                     selection[selection[0]] -= 1;
             } else if (event.key.code == sf::Keyboard::Down) {
                 if (selection[0] == 1 && selection[1] < graph_size - 1)
-                    selection[selection[0]] += 1;
+                    selection[1] += 1;
                 if (selection[0] == 2 && selection[2] < game_size - 1)
-                    selection[selection[0]] += 1;
+                    selection[2] += 1;
             } else if (event.key.code == sf::Keyboard::Left) {
                 selection[0] = 1;
             } else if (event.key.code == sf::Keyboard::Right) {
@@ -149,6 +149,8 @@ void MenuPrincipal::conditionsKey(arcade::GameState &gameState)
 void MenuPrincipal::handleInput(arcade::GameState &gameState)
 {
     sf::Event event;
+    int ga_size = gameState.getGamesList().size();
+    int gr_size = gameState.getGraphList().size();
     while (wdw.pollEvent(event))
         if (event.type == sf::Event::KeyReleased)
             gameState.setKey(arcade::keyPressed::NOTHING);
@@ -174,6 +176,15 @@ void MenuPrincipal::handleInput(arcade::GameState &gameState)
                         break;
                     case sf::Keyboard::Space:
                         gameState.setKey(arcade::keyPressed::SPACE_KEY);
+                        break;
+                    case sf::Keyboard::F1:
+                        selection[2] = ((selection[2] < (ga_size - 1)) ? selection[2] + 1 : 0);
+                        gameState.setGameLib(gameState.getGamesList()[selection[2]]);
+                        gameState.setKey(arcade::keyPressed::NOTHING);
+                        break;
+                    case sf::Keyboard::F2:
+                        selection[1] = ((selection[1] < (gr_size - 1)) ? selection[1] + 1 : 0);
+                        gameState.setGraphLib(gameState.getGraphList()[selection[1]]);
                         break;
                     default:
                         break;

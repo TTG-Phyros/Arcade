@@ -13,6 +13,7 @@ MainMenu::MainMenu() {
     noecho();
     keypad(stdscr, TRUE);
     cbreak();
+    start_color();
 }
 
 MainMenu::~MainMenu()
@@ -36,7 +37,7 @@ void MainMenu::displayMenu(arcade::GameState &gameState) {
     int ch = getch();
     handleInput(ch, games.size(), graphics.size(), gameState);
 
-    if (ch == 10 && username.size() > 1) { // ENTER key
+    if (ch == 10 && username.size() > 1) {
         printSelectedGameAndGraphic(games[selectedGameIndex], graphics[selectedGraphicIndex]);
         gameState.setState(arcade::screenState::IN_GAME);
         gameState.setGameLib(games[selectedGameIndex]);
@@ -120,7 +121,7 @@ void MainMenu::handleInput(int ch, int numGames, int numGraphics, arcade::GameSt
     else if (ch == KEY_BACKSPACE) {
         if (username.size() >= 1)
             username.pop_back();
-    } else
+    } else if (ch != 10)
         username += ch;
 }
 
@@ -148,36 +149,81 @@ void MainMenu::printSelectedGameAndGraphic(const std::string& selectedGame, cons
     }
 }
 
+void MainMenu::inputHandler(arcade::GameState &gameState)
+{
+    int keyPressed = getch();
+    if (keyPressed == 27)
+        gameState.setState(arcade::screenState::GAME_END);
+    if (keyPressed == KEY_UP)
+        gameState.setKey(arcade::keyPressed::UP_KEY);
+    if (keyPressed == KEY_DOWN)
+        gameState.setKey(arcade::keyPressed::DOWN_KEY);
+    if (keyPressed == KEY_LEFT)
+        gameState.setKey(arcade::keyPressed::LEFT_KEY);
+    if (keyPressed == KEY_RIGHT)
+        gameState.setKey(arcade::keyPressed::RIGHT_KEY);
+    if (keyPressed == 32)
+        gameState.setKey(arcade::keyPressed::SPACE_KEY);
+    if (keyPressed == 103 || keyPressed == 71) {
+        int numGames = gameState.getGamesList().size();
+        selectedGameIndex++;
+        if (selectedGameIndex >= numGames)
+            selectedGameIndex = 0;
+        gameState.setGameLib(gameState.getGamesList()[selectedGameIndex]);
+        gameState.setKey(arcade::keyPressed::NOTHING);
+    }
+    if (keyPressed == 104 || keyPressed == 72) {
+        int numGraph = gameState.getGraphList().size();
+        selectedGraphicIndex++;
+        if (selectedGraphicIndex >= numGraph)
+            selectedGraphicIndex = 0;
+        gameState.setGraphLib(gameState.getGraphList()[selectedGraphicIndex]);
+    }
+}
+
+void MainMenu::drawMap(std::vector<std::string> gameMap)
+{
+    for (size_t i = 0; i < gameMap.size(); ++i) {
+        for (size_t j = 0; j <= gameMap[i].size(); ++j) {
+            if (gameMap[i][j] == 'X') {
+                init_pair(1, COLOR_RED, COLOR_BLUE);
+                wattron(mapgaming, COLOR_PAIR(1));
+                mvwprintw(mapgaming, 2 + i, ((90 - (gameMap[i].size() * 2)) / 2) + (j * 2), "%s", "  ");
+                wattroff(mapgaming, COLOR_PAIR(1));
+            } else if (gameMap[i][j] == 'O') {
+                init_pair(2, COLOR_RED, COLOR_YELLOW);
+                wattron(mapgaming, COLOR_PAIR(2));
+                mvwprintw(mapgaming, 2 + i, ((90 - (gameMap[i].size() * 2)) / 2) + (j * 2), "%s", "  ");
+                wattroff(mapgaming, COLOR_PAIR(2));
+            } else if (gameMap[i][j] == 'o') {
+                init_pair(3, COLOR_RED, COLOR_GREEN);
+                wattron(mapgaming, COLOR_PAIR(3));
+                mvwprintw(mapgaming, 2 + i, ((90 - (gameMap[i].size() * 2)) / 2) + (j * 2), "%s", "  ");
+                wattroff(mapgaming, COLOR_PAIR(3));
+            } else if (gameMap[i][j] == 'F') {
+                init_pair(4, COLOR_RED, COLOR_RED);
+                wattron(mapgaming, COLOR_PAIR(4));
+                mvwprintw(mapgaming, 2 + i, ((90 - (gameMap[i].size() * 2)) / 2) + (j * 2), "%s", "  ");
+                wattroff(mapgaming, COLOR_PAIR(4));
+            } else if (gameMap[i][j] == ' ') {
+                mvwprintw(mapgaming, 2 + i, ((90 - (gameMap[i].size() * 2)) / 2) + (j * 2), "%s", "  ");
+            }
+        }
+    }
+}
+
 void MainMenu::displayGame(arcade::GameState &gameState)
 {
     clear();
-    std::vector<std::string> gamemap = gameState.getGameArray();
+    std::vector<std::string> gameMap = gameState.getGameArray();
     box(mapgaming, ACS_VLINE, ACS_HLINE);
     mvwprintw(mapgaming, 1, 41, " Arcade ");
-    for (size_t i = 0; i < gamemap.size(); ++i)
-        mvwprintw(mapgaming, 2 + i, (90 - gamemap[i].size()) / 2, "%s", gamemap[i].c_str());
+
+    drawMap(gameMap);
 
     refresh();
     timeout(1);
-    int keyPressed = getch();
-    if (keyPressed == 27)
-        gameState.setState(arcade::screenState::ARCADE_MENU);
-
-    if (keyPressed == KEY_UP)
-        gameState.setKey(arcade::keyPressed::UP_KEY);
-
-    if (keyPressed == KEY_DOWN)
-        gameState.setKey(arcade::keyPressed::DOWN_KEY);
-
-    if (keyPressed == KEY_LEFT)
-        gameState.setKey(arcade::keyPressed::LEFT_KEY);
-
-    if (keyPressed == KEY_RIGHT)
-        gameState.setKey(arcade::keyPressed::RIGHT_KEY);
-
-    if (keyPressed == 32)
-        gameState.setKey(arcade::keyPressed::SPACE_KEY);
-
+    inputHandler(gameState);
     usleep(500000);
     timeout(-1);
 }

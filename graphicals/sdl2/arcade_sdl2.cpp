@@ -81,7 +81,7 @@ void arcadeSDL::setMode(MainMenuMode mode)
     _mode = mode;
 }
 
-void arcadeSDL::displayAll(arcade::GameState &gameState)
+void arcadeSDL::displayGameList(arcade::GameState &gameState)
 {
     SDL_Rect gameRect = {10, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
@@ -104,12 +104,15 @@ void arcadeSDL::displayAll(arcade::GameState &gameState)
         gamesRect.y += 30;
         i++;
     }
+}
 
+void arcadeSDL::displayGraphList(arcade::GameState &gameState)
+{
     SDL_Rect graphicalRect = {220, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &graphicalRect);
     SDL_Rect graphicalsRect = {233, 40, 172, 20};
-    i = 0;
+    int i = 0;
 
     std::vector<std::string> graphList = gameState.getGraphList();
     SDL_Rect selectedGraphical = {233, 40, 172, 20};
@@ -126,7 +129,10 @@ void arcadeSDL::displayAll(arcade::GameState &gameState)
         graphicalsRect.y += 30;
         i++;
     }
+}
 
+void arcadeSDL::displayScores(arcade::GameState &gameState)
+{
     SDL_Rect scoreRect = {430, 30, 200, 220};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &scoreRect);
@@ -150,7 +156,10 @@ void arcadeSDL::displayAll(arcade::GameState &gameState)
         scoreNameRect.y += 30;
         scoreScoreRect.y += 30;
     }
+}
 
+void arcadeSDL::displayUsername(arcade::GameState &gameState)
+{
     SDL_Rect usernameRectCat = {10, 260, 620, 50};
     SDL_SetRenderDrawColor(_renderer, 0, 0, 255, 255);
     SDL_RenderDrawRect(_renderer, &usernameRectCat);
@@ -168,8 +177,16 @@ void arcadeSDL::displayAll(arcade::GameState &gameState)
     }
 }
 
+void arcadeSDL::displayAll(arcade::GameState &gameState)
+{
+    this->displayGameList(gameState);
+    this->displayGraphList(gameState);
+    this->displayScores(gameState);
+    this->displayUsername(gameState);
+}
+
 void arcadeSDL::handleKeyPress(SDL_Keycode key, int& selection, int size) {
-    if (_mode == DEFAULT) {
+    if (_mode == DEFAULT || _mode == GAME) {
         if (key == SDLK_F1 || key == SDLK_F3) {
             selection = selection == 0 ? (size - 1) : selection - 1;
         } else if (key == SDLK_F2 || key == SDLK_F4) {
@@ -290,10 +307,21 @@ void arcadeSDL::handleInput(arcade::GameState &gameState)
                         gameState.setKey(arcade::keyPressed::DOWN_KEY);
                         break;
                     case SDLK_ESCAPE:
-                        gameState.setKey(arcade::keyPressed::ESC_KEY);
+                        gameState.setState(arcade::screenState::STOP);
                         break;
                     case SDLK_SPACE:
                         gameState.setKey(arcade::keyPressed::SPACE_KEY);
+                        break;
+                    case SDLK_F1:
+                    case SDLK_F2:
+                        handleKeyPress(event.key.keysym.sym, _gameSelected, gameState.getGamesList().size());
+                        gameState.setGameLib(gameState.getGamesList()[_gameSelected]);
+                        gameState.setKey(arcade::keyPressed::NOTHING);
+                        break;
+                    case SDLK_F3:
+                    case SDLK_F4:
+                        handleKeyPress(event.key.keysym.sym, _graphicalSelected, gameState.getGraphList().size());
+                        gameState.setGraphLib(gameState.getGraphList()[_graphicalSelected]);
                         break;
                     default:
                         break;

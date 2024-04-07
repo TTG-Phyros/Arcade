@@ -27,7 +27,8 @@ class nibbler : public arcade::IGame {
         std::vector<std::string> getMazeUpdated();
         void conditionsKey(arcade::keyPressed key);
 
-        bool getGameOver() { return gameOver; }
+        void moveSnakeBody(int saveSnakeX, int saveSnakeY);
+        void moveSnakeHead();
         arcade::libType getLibType();
         void updateGameState(arcade::GameState &gameState);
 
@@ -40,15 +41,35 @@ class nibbler : public arcade::IGame {
         int snakeX, snakeY, fruitX, fruitY;
 
         // Direction initiale du serpent
-        Direction dir;
+        Direction dir = STOP;
 
         // Longueur et coordonnées du corps du serpent
         std::vector<int> tailX, tailY;
 
         // Variable de jeu
-        bool gameOver;
-        int score;
-        std::vector<std::string> maze;
+        bool gameOver = false;
+        int score = 0;
+        std::vector<std::string> maze = {
+            "XXXXXXXXXXXXXXXXXXX",
+            "X   XX   X   XX   X",
+            "X X    X X X    X X",
+            "X XXXX   X   XXXX X",
+            "X                 X",
+            "XX  XXX XXX XXX  XX",
+            "X    X  XXX  X    X",
+            "X                 X",
+            "XX XX  X   X  XX XX",
+            "XX XX  XX XX  XX XX",
+            "XX XX  X   X  XX XX",
+            "X                 X",
+            "X    X  XXX  X    X",
+            "XX  XXX XXX XXX  XX",
+            "X                 X",
+            "X XXXX   X   XXXX X",
+            "X X    X X X    X X",
+            "X   XX   X   XX   X",
+            "XXXXXXXXXXXXXXXXXXX"
+        };
 };
 
 #endif /* !ARCADE_NIBBLER_HPP_ */

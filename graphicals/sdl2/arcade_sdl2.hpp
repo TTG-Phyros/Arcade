@@ -32,6 +32,10 @@
             void initializeGraphicalSelector(std::vector<std::string> graphicals);
             void initializeScoreViewer(std::map<std::string, int> scores);
             void initializeUsernameChanger();
+            void displayGameList(arcade::GameState &gameState);
+            void displayGraphList(arcade::GameState &gameState);
+            void displayScores(arcade::GameState &gameState);
+            void displayUsername(arcade::GameState &gameState);
             void setFont(TTF_Font *font);
             TTF_Font *getFont();
             void setRenderer(SDL_Renderer *renderer);

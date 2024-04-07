@@ -34,6 +34,8 @@ private:
     void displayScoreMenu(std::map<std::string, int> scores);
     void handleInput(int ch, int numGames, int numGraphics, arcade::GameState &gameState);
     void printSelectedGameAndGraphic(const std::string& selectedGame, const std::string& selectedGraphic);
+    void drawMap(std::vector<std::string> gamemap);
+    void inputHandler(arcade::GameState &gameState);
     int selectedGameIndex = 0;
     int selectedGraphicIndex = 0;
     int selectedCategory = 0; // 0: games, 1: graphics
