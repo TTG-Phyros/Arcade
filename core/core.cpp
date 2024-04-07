@@ -5,34 +5,30 @@
 ** core
 */
 
-#include "IGame.hpp"
-#include "IGraph.hpp"
-#include "Parsing.hpp"
-#include <iostream>
-#include <fstream>
-#include <string.h>
+#include "core.hpp"
 
-void argumentsGestion(int ac, char **av, arcade::GameState *gameState)
+Core::Core()
 {
-    if (ac != 2) {
-        std::cout << "Not enough arguments, try with -h" << std::endl;
-        exit(84);
-    }
-    if (strcmp(av[1], "-h") == 0) {
-        std::cout << "./arcade [graphLib]" << std::endl;
-        std::cout << "    graphLib = Name of the graphical lib by default" << std::endl;
-        exit(84);
-    }
+}
+
+Core::~Core()
+{
+}
+
+void Core::argumentsGestion(int ac, char **av, arcade::GameState *gameState)
+{
+    if (ac != 2)
+        throw ArgumentEror("Not enough arguments, try with -h");
+    if (strcmp(av[1], "-h") == 0)
+        throw ArgumentEror("./arcade [graphLib]\n    graphLib = Name of the graphical lib by default");
     std::vector<std::string> graphList = gameState->getGraphList();
     if (std::find(graphList.begin(), graphList.end(), av[1]) != graphList.end())
         gameState->setGraphLib(av[1]);
-    else {
-        std::cout << "Graphical Lib does not exist in lib or is not a graphical lib" << std::endl;
-        exit(84);
-    }
+    else
+        throw ArgumentEror("Graphical Lib does not exist in lib or is not a graphical lib");
 }
 
-void printScore(std::map<std::string, std::map<std::string, int>> scores)
+void Core::printScore(std::map<std::string, std::map<std::string, int>> scores)
 {
     std::map<std::string, std::map<std::string, int>>::iterator itScore = scores.begin();
     for (; itScore != scores.end(); ++itScore) {
@@ -44,58 +40,51 @@ void printScore(std::map<std::string, std::map<std::string, int>> scores)
     }
 }
 
-void printMiniScore(std::map<std::string, int> scores)
+void Core::printMiniScore(std::map<std::string, int> scores)
 {
-    std::cout << "Game : Niggler" << std::endl;
+    std::cout << "Scores" << std::endl;
     std::map<std::string, int>::iterator itScore = scores.begin();
     for (; itScore != scores.end(); ++itScore) {
         std::cout << "    " << itScore->first << " : " << itScore->second << std::endl;
     }
 }
 
-arcade::IGraph *initializeGraph(std::string graph)
+arcade::IGraph *Core::initializeGraph(std::string graph)
 {
     void *graphLib = dlopen(graph.c_str(), RTLD_LAZY);
-    if (!graphLib) {
-        fprintf(stderr, "%s\n", dlerror());
-        exit(84);
-    }
+    if (!graphLib)
+        throw DynamicLibError(dlerror());
 
     dlerror();
     arcade::IGraph *(*instance)();
     *(void **)(&instance) = dlsym(graphLib, "instance");
 
-    if (!instance) {
-        fprintf(stderr, "%s\n", dlerror());
-        exit(84);
-    }
+    if (!instance)
+        throw DynamicLibError(dlerror());
     dlerror();
     return (*instance)();
 }
 
-arcade::IGame *initializeGame(std::string game)
+arcade::IGame *Core::initializeGame(std::string game)
 {
     if (strcmp(game.c_str(), "") == 0)
         return nullptr;
     void *graphLib = dlopen(game.c_str(), RTLD_LAZY);
-    if (!graphLib) {
-        fprintf(stderr, "%s\n", dlerror());
-        exit(84);
-    }
+    if (!graphLib)
+        throw DynamicLibError(dlerror());
 
     dlerror();
     arcade::IGame *(*instance)();
     *(void **)(&instance) = dlsym(graphLib, "instance");
 
-    if (!instance) {
-        fprintf(stderr, "%s\n", dlerror());
-        exit(84);
-    }
+    if (!instance)
+        throw DynamicLibError(dlerror());
+
     dlerror();
     return (*instance)();
 }
 
-void updateScoreFiles(arcade::GameState &gameState)
+void Core::updateScoreFiles(arcade::GameState &gameState)
 {
     std::smatch matches;
     std::string temp = gameState.getGameLib();
@@ -114,23 +103,21 @@ void updateScoreFiles(arcade::GameState &gameState)
     gameState.updateScores();
 }
 
-int main (int ac, char **av)
+void Core::coreLoop(arcade::GameState *gameState)
 {
-    arcade::GameState *gameState = new arcade::GameState();
-    argumentsGestion(ac, av, gameState);
     std::string currentGraphLib = gameState->getGraphLib();
     std::string currentGameLib = gameState->getGameLib();
-    arcade::IGraph *graphLib = initializeGraph(gameState->getGraphLib());
-    arcade::IGame *gameLib = initializeGame(gameState->getGameLib());
+    arcade::IGraph *graphLib = this->initializeGraph(gameState->getGraphLib());
+    arcade::IGame *gameLib = this->initializeGame(gameState->getGameLib());
     while (gameState->getState() != arcade::screenState::STOP) {
         if (strcmp(currentGraphLib.c_str(), gameState->getGraphLib().c_str()) != 0) {
             delete graphLib;
-            graphLib = initializeGraph(gameState->getGraphLib());
+            graphLib = this->initializeGraph(gameState->getGraphLib());
             currentGraphLib = gameState->getGraphLib();
         }
         if (strcmp(currentGameLib.c_str(), gameState->getGameLib().c_str()) != 0) {
             delete gameLib;
-            gameLib = initializeGame(gameState->getGameLib());
+            gameLib = this->initializeGame(gameState->getGameLib());
             currentGameLib = gameState->getGameLib();
         }
         graphLib->displayWindow(*gameState);
@@ -138,11 +125,31 @@ int main (int ac, char **av)
             gameLib->updateGameState(*gameState);
         }
         if (gameState->getState() == arcade::screenState::GAME_END) {
-            updateScoreFiles(*gameState);
+            this->updateScoreFiles(*gameState);
             currentGameLib = "";
             currentGraphLib = "";
             gameState->setState(arcade::screenState::ARCADE_MENU);
             gameState->setKey(arcade::keyPressed::NOTHING);
         }
     }
+}
+
+int main (int ac, char **av)
+{
+    Core *core = new Core();
+    try {
+        arcade::GameState *gameState = new arcade::GameState();
+        core->argumentsGestion(ac, av, gameState);
+        core->coreLoop(gameState);
+    } catch (DynamicLibError &error) {
+        std::cout << error.what() << std::endl;
+        return 84;
+    } catch (ArgumentEror &error) {
+        std::cout << error.what() << std::endl;
+        return 84;
+    } catch (GraphInitError &error) {
+        std::cout << error.what() << std::endl;
+        return 84;
+    }
+    return 0;
 }

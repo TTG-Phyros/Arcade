@@ -7,6 +7,7 @@
 
 #include "arcade_sfml.hpp"
 #include "../../core/GameState.hpp"
+#include "../../core/core.hpp"
 namespace fs = std::filesystem;
 
 MenuPrincipal::MenuPrincipal()
@@ -18,7 +19,7 @@ MenuPrincipal::MenuPrincipal()
     r_graphics.setSize(sf::Vector2f(WINDOW_SIZE_X / 3, WINDOW_SIZE_Y));
 
     if (!font.loadFromFile("./graphicals/sfml/press_start/prstartk.ttf"))
-        exit(84);
+        throw GraphInitError("Failed to load SFML Font");
 
     text.setFont(font);
     text.setCharacterSize(30);

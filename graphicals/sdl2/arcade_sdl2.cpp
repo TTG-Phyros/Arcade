@@ -7,38 +7,31 @@
 
 #include "arcade_sdl2.hpp"
 #include "../../core/GameState.hpp"
+#include "../../core/core.hpp"
 
 arcadeSDL::arcadeSDL()
 {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        fprintf(stdout, "Échec de l'initialisation de la SDL (%s)\n", SDL_GetError());
-        exit(84);
-    }
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+        throw GraphInitError("Échec de l'initialisation de la SDL : " + std::string(SDL_GetError()));
 
     this->setWindow(SDL_CreateWindow(
-        "Main Menu SDL2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        640,
-        320,
-        SDL_WINDOW_SHOWN
-    ));
+    "Main Menu SDL2",
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    640,
+    320,
+    SDL_WINDOW_SHOWN));
 
     this->setRenderer(SDL_CreateRenderer(this->getWindow(), -1, 0));
 
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
     SDL_RenderClear(_renderer);
 
-    if (TTF_Init() < 0) {
-        fprintf(stdout, "Error while initing TTF module\n");
-        exit(84);
-    }
-
-    this->setFont(TTF_OpenFont("./ressources/arcadeFont.ttf", 15));
-    if (!this->getFont()) {
-        fprintf(stdout, "Error while loading the font");
-        exit(84);
-    }
+    if (TTF_Init() < 0)
+        throw GraphInitError("Error while initing TTF module of SDL\n");
+    this->setFont(TTF_OpenFont("./graphicals/sdl2/arcadeFont.ttf", 15));
+    if (!this->getFont())
+        throw GraphInitError("Error while loading the font of SDL");
 }
 
 void arcadeSDL::setFont(TTF_Font *font)

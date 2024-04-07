@@ -11,14 +11,14 @@ SRC = ./core/core.cpp 		\
 	  ./core/Parsing.cpp 	\
 	  ./core/GameState.cpp 	\
 
-CFLAGS 	= -std=c++20 -Wall -g3
+CFLAGS 	= -std=c++20 -Wall -g3 -fno-gnu-unique
 
 all: $(NAME)
 
 $(NAME):
 	g++ -o $(NAME) $(SRC) $(CFLAGS)
-	make -C ./graphicals
-	make -C ./games
+	make -C ./graphicals re
+	make -C ./games re
 
 valgrind: $(NAME)
 	clear
@@ -45,5 +45,3 @@ fclean : clean
 	make -C ./games fclean
 
 re : fclean $(NAME)
-	make -C ./graphicals re
-	make -C ./games re

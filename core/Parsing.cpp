@@ -10,6 +10,7 @@
 #include "IGame.hpp"
 #include "IGraph.hpp"
 #include "ILib.hpp"
+#include "core.hpp"
 
 arcade::Parsing::Parsing()
 {
@@ -72,18 +73,14 @@ std::vector<std::string> arcade::Parsing::getGraphFromLibs(std::vector<std::stri
     void *_lib;
     for (const auto &lib : allLibs) {
         _lib = dlopen(lib.c_str(), RTLD_LAZY);
-        if (!_lib) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(84);
-        }
+        if (!_lib)
+            throw DynamicLibError(dlerror());
 
         dlerror();
         *(void **)(&_getLibType) = dlsym(_lib, "instance");
 
-        if (!_getLibType) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(84);
-        }
+        if (!_getLibType)
+            throw DynamicLibError(dlerror());
 
         ILib *object = (*_getLibType)();
         object->getLibType();
